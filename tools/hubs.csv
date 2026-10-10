@@ -1,0 +1,41 @@
+name,type,query,lat,lon
+Dumuria,village,"Dumuria, Khulna, Bangladesh",,
+Batiaghata,village,"Batiaghata, Khulna, Bangladesh",,
+Fakirhat,village,"Fakirhat Upazila, Bagerhat District, Bangladesh",,
+Rampal,village,"Rampal, Bagerhat, Bangladesh",,
+Kalaroa,village,"Kalaroa, Satkhira, Bangladesh",,
+Monirampur,village,"Monirampur, Jessore, Bangladesh",,
+Sharsha,village,"Sharsha Upazila, Jessore District, Bangladesh",,
+Kotchandpur,village,"Kotchandpur, Jhenaidah, Bangladesh",,
+Kaliganj,village,"Kaliganj, Jhenaidah, Bangladesh",,
+Shailkupa,village,"Shailkupa, Jhenaidah, Bangladesh",,
+Bheramara,village,"Bheramara, Kushtia, Bangladesh",,
+Mujibnagar,village,"Mujibnagar, Meherpur, Bangladesh",,
+Khulna,hub,"Khulna, Bangladesh",22.8456,89.5403
+Jessore,hub,"Jessore, Bangladesh",,
+Satkhira,hub,"Satkhira, Bangladesh",,
+Bagerhat,hub,"Bagerhat, Bangladesh",,
+Narail,hub,"Narail, Bangladesh",23.1725,89.5126
+Magura,hub,"Magura, Bangladesh",,
+Jhenaidah,hub,"Jhenaidah, Bangladesh",,
+Kushtia,hub,"Kushtia, Bangladesh",23.90,89.12
+Chuadanga,hub,"Chuadanga, Bangladesh",,
+Meherpur,hub,"Meherpur, Bangladesh",,
+Faridpur,hub,"Faridpur, Bangladesh",,
+Gopalganj,hub,"Gopalganj, Bangladesh",,
+Barishal,hub,"Barishal, Bangladesh",22.7010,90.3535
+Pirojpur,hub,"Pirojpur, Bangladesh",,
+Dhaka,market,"Karwan Bazar, Dhaka, Bangladesh",,
+Narayanganj,market,"Narayanganj, Bangladesh",,
+Gazipur,market,"Gazipur, Bangladesh",,
+Bogura,market,"Bogura, Bangladesh",,
+Rajshahi,market,"Rajshahi, Bangladesh",24.3745,88.6042
+Natore,market,"Natore, Bangladesh",,
+Pabna,market,"Pabna, Bangladesh",,
+Sirajganj,market,"Sirajganj, Bangladesh",,
+Tangail,market,"Tangail, Bangladesh",,
+Mymensingh,market,"Mymensingh, Bangladesh",24.7471,90.4203
+Chattogram,market,"Chattogram, Bangladesh",,
+Rangpur,market,"Rangpur, Bangladesh",25.7439,89.2752
+Dinajpur,market,"Dinajpur, Bangladesh",,
+Cumilla,market,"Cumilla, Bangladesh",,
