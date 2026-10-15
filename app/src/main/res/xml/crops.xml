@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<crops>
+    <!-- ASSUMPTION values. Replace with figures from a cited source
+         (for example BARI / DAE post-harvest guides) before the report. -->
+    <crop key="potato" spoilagePctPerHour="0.05" />
+    <crop key="tomato" spoilagePctPerHour="0.40" />
+    <crop key="onion" spoilagePctPerHour="0.10" />
+</crops>
