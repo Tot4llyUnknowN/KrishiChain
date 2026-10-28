@@ -1,0 +1,145 @@
+<resources>
+    <string name="app_name">KrishiChain</string>
+
+    <string name="home_title">KrishiChain</string>
+    <string name="home_subtitle">Find the most profitable market for your crop</string>
+    <string name="label_crop">Crop</string>
+    <string name="label_quantity">Quantity (kg)</string>
+    <string name="hint_quantity">e.g. 1000</string>
+    <string name="label_origin">Your location</string>
+    <string name="button_find">Find best markets</string>
+
+    <string name="status_loading">Loading network…</string>
+    <string name="status_loaded">Loaded %1$d places, %2$d roads, %3$d prices</string>
+    <string name="status_error">Could not load data: %1$s</string>
+    <string name="warning_dummy">Demo prices (DUMMY) - not real market data</string>
+    <string name="error_quantity">Enter a quantity above 0</string>
+    <string name="toast_selected">%1$s, %2$s kg, from %3$s</string>
+
+    <string name="ranking_title">Best markets</string>
+    <string name="ranking_summary">%1$s · %2$,.0f kg · from %3$s</string>
+    <string name="ranking_empty">No prices found for this crop.</string>
+    <string name="ranking_error">Could not calculate: %1$s</string>
+    <string name="ranking_insight_better">Best market (%1$s) earns ৳%2$,.0f more than your nearest market (%3$s).</string>
+    <string name="ranking_insight_same">Your nearest market (%1$s) is already the best choice.</string>
+    <string name="tag_best">BEST</string>
+    <string name="tag_nearest">NEAREST</string>
+    <string name="tag_best_nearest">BEST · NEAREST</string>
+    <string name="item_profit">৳%1$,.0f</string>
+    <string name="item_price">Price ৳%1$.1f/kg</string>
+    <string name="item_route">%1$.0f km · %2$s</string>
+    <string name="item_costs">Transport ৳%1$,.0f · Toll ৳%2$,.0f · Spoilage %3$.1f%%</string>
+    <string name="duration_hm">%1$d h %2$d min</string>
+    <string name="duration_min">%1$d min</string>
+    <string name="toast_route_soon">Route details for %1$s come in the next part</string>
+
+    <string-array name="crop_names">
+        <item>Potato</item>
+        <item>Tomato</item>
+        <item>Onion</item>
+    </string-array>
+    <string name="route_title">Route</string>
+    <string name="route_summary">%1$s · %2$,.0f kg · %3$s → %4$s</string>
+    <string name="route_cheapest">Cheapest</string>
+    <string name="route_fastest">Fastest</string>
+    <string name="route_totals">%1$.0f km · %2$s · Transport ৳%3$,.0f · Toll ৳%4$,.0f · Spoilage %5$.1f%%</string>
+    <string name="route_profit">Net profit ৳%1$,.0f</string>
+    <string name="route_compare">Cheapest: ৳%1$,.0f profit, %2$s. Fastest: ৳%3$,.0f profit, %4$s.</string>
+    <string name="route_same">Cheapest and fastest are the same route.</string>
+    <string name="route_here">You are already at this market. Selling locally has no transport cost.</string>
+    <string name="route_error">Could not calculate route: %1$s</string>
+    <string name="step_title">%1$s → %2$s</string>
+    <string name="step_detail">%1$.0f km · %2$s · ৳%3$,.0f</string>
+    <string name="button_share">Share</string>
+    <string name="button_map">Map app</string>
+    <string name="button_call">Call</string>
+    <string name="share_chooser">Share plan with</string>
+    <string name="share_text">KrishiChain plan: sell %1$,.0f kg %2$s at %3$s (from %4$s). Route: %5$s. %6$.0f km, %7$s. Expected net profit ৳%8$,.0f.</string>
+    <string name="toast_no_app">No app found to handle this action</string>
+    <string name="lab_title">Graph Lab</string>
+    <string name="lab_source">Source (or tap a place)</string>
+    <string name="lab_dest">Destination</string>
+    <string name="lab_none">— none —</string>
+    <string name="lab_loading">Loading network…</string>
+    <string name="lab_ready">Pick an algorithm and press Run</string>
+    <string name="lab_legend">Green=village · Orange=hub · Purple=market · Blue ring=done · Orange ring=frontier · Number=cost per ton</string>
+    <string name="lab_progress">Step %1$d / %2$d</string>
+    <string name="lab_result_path">%1$s → %2$s: ৳%3$,.0f per ton</string>
+    <string name="lab_result_run">Finished after %1$d steps. Pick a destination to see a path.</string>
+    <string name="lab_unreachable">%1$s is unreachable</string>
+    <string name="lab_result_cycle">Negative cycle detected: %1$s. No shortest path exists.</string>
+    <string name="lab_result_mst">%1$d roads · total ৳%2$,.0f · %3$d operations</string>
+    <string name="button_run">Run</string>
+    <string name="button_play">Play</string>
+    <string name="button_pause">Pause</string>
+    <string name="button_step">Step</string>
+    <string name="button_end">End</string>
+    <string name="button_graph_lab">Graph Lab</string>
+
+    <string-array name="lab_algorithms">
+        <item>Dijkstra (cheapest cost)</item>
+        <item>Bellman-Ford (net cost, with backhaul credits)</item>
+        <item>Bellman-Ford: negative cycle demo</item>
+        <item>Kruskal (cheapest road network)</item>
+        <item>Prim (cheapest road network)</item>
+    </string-array>
+    <string name="bn_title">Bottleneck Analyzer</string>
+    <string name="bn_cluster">Farmer cluster</string>
+    <string name="bn_all">All villages</string>
+    <string name="bn_ready">Pick a cluster and press Run</string>
+    <string name="bn_legend">Cyan = flow carried · Thick red = bottleneck roads (minimum cut)</string>
+    <string name="bn_result">Max flow: %1$,.0f tons/day</string>
+    <string name="bn_cut_header">Bottleneck roads (minimum cut), total %1$,.0f t/day:</string>
+    <string name="bn_cut_line">• %1$s → %2$s  (%3$,.0f t/day, full)</string>
+    <string name="bn_hint">Only roads in a minimum cut can raise the maximum. Upgrading any other road changes nothing.</string>
+    <string name="bn_farms">All farms (super-source)</string>
+    <string name="bn_demand">Market demand (super-sink)</string>
+    <string name="bn_assume">Assumption: each market absorbs %1$d t/day.</string>
+
+    <string name="planner_title">Network Planner</string>
+    <string name="planner_kruskal">Kruskal</string>
+    <string name="planner_prim">Prim</string>
+    <string name="planner_summary">Roads in the network: %1$d · building all of them: %2$,.0f km</string>
+    <string name="planner_k">Kruskal: %1$d roads · %2$,.1f km · %3$d operations · %4$.1f µs</string>
+    <string name="planner_p">Prim (from %1$s): %2$d roads · %3$,.1f km · %4$d operations · %5$.1f µs</string>
+    <string name="planner_saving">The tree uses %1$.0f%% less road length than building everything. Totals are equal by theory; the trees are %2$s.</string>
+    <string name="planner_same">identical</string>
+    <string name="planner_diff">different (tied road lengths)</string>
+    <string name="planner_note">Weight = road length in km, a proxy for construction cost. Tap a place to move Prim\'s start.</string>
+    <string name="button_bottleneck">Bottleneck Analyzer</string>
+    <string name="button_planner">Network Planner</string>
+    <string name="sync_channel_name">Data sync</string>
+    <string name="sync_notif_title">KrishiChain</string>
+    <string name="sync_notif_text">Syncing market data…</string>
+    <string name="sync_running">Sync running…</string>
+    <string name="sync_done">Sync done: %1$s</string>
+    <string name="sync_idle">Not synced yet in this session</string>
+    <string name="sync_no_notif">Notifications are off, so the sync notification is hidden. Sync still works.</string>
+    <string name="net_online">Network: online</string>
+    <string name="net_offline">Network: offline (everything still works from the local database)</string>
+    <string name="button_sync">Sync now</string>
+    <string name="button_benchmark">Benchmark</string>
+
+    <string name="bm_title">Benchmark</string>
+    <string name="bm_note">Floyd-Warshall vs Johnson, all-pairs shortest paths with negative arcs. Best of N runs, in milliseconds. "real" is your 40-hub net-cost graph; the rest are random graphs.</string>
+    <string name="button_bm_run">Run benchmark</string>
+    <string name="bm_running">Running…</string>
+    <string name="bm_done">Done. Both algorithms produced identical matrices unless MISMATCH is shown.</string>
+    <string name="weather_none">Weather: no data yet (tap Refresh weather)</string>
+    <string name="weather_real">Weather: real data (%1$s), max rain %2$.1f mm</string>
+    <string name="weather_sim">Weather: SIMULATED monsoon (demo), %1$.0f mm in the south-west</string>
+    <string name="weather_ok">weather updated</string>
+    <string name="weather_fail">weather offline, using cache</string>
+    <string name="weather_refreshing">Refreshing weather…</string>
+    <string name="button_weather">Refresh weather</string>
+    <string name="button_sim_on">Simulate monsoon (demo)</string>
+    <string name="button_sim_off">Clear weather</string>
+    <string name="button_alerts">Check price alerts now</string>
+    <string name="alerts_started">Checking prices. The first check only saves a baseline.</string>
+
+    <string name="alert_channel_name">Price alerts</string>
+    <string name="alert_title">Price alert</string>
+    <string name="alert_up">up</string>
+    <string name="alert_down">down</string>
+    <string name="alert_text">%1$s average %2$s %3$.1f%% (৳%4$.1f → ৳%5$.1f per kg)</string>
+</resources>
