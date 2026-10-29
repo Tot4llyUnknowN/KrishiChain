@@ -61,4 +61,10 @@ public interface NetworkDao {
 
     @Query("SELECT * FROM weather")
     List<WeatherEntity> getWeather();
+
+    @Query("UPDATE prices SET price = :price, source = :source, date = :date WHERE nodeId = :nodeId AND crop = :crop")
+    int updatePrice(int nodeId, String crop, double price, String source, String date);
+
+    @Query("SELECT * FROM prices WHERE nodeId = :nodeId AND crop = :crop LIMIT 1")
+    PriceEntity getPrice(int nodeId, String crop);
 }

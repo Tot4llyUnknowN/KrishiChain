@@ -142,4 +142,19 @@
     <string name="alert_up">up</string>
     <string name="alert_down">down</string>
     <string name="alert_text">%1$s average %2$s %3$.1f%% (৳%4$.1f → ৳%5$.1f per kg)</string>
+
+    <!-- Firebase Crowd Reports -->
+    <string name="button_reports">Crowd Price Reports</string>
+    <string name="title_reports">Crowd Price Reports</string>
+    <string name="report_submit_heading">Submit Market Price</string>
+    <string name="report_submit_sub">Report a live crop price from your local market hub to the network</string>
+    <string name="label_market_hub">Market Hub</string>
+    <string name="label_price_bdt">Price (৳/kg)</string>
+    <string name="hint_price">e.g. 32.5</string>
+    <string name="button_submit_report">Submit Price Report</string>
+    <string name="report_stream_heading">Live Market Reports</string>
+    <string name="reports_loading">Connecting to Firestore…</string>
+    <string name="button_mergesort">Merge Sort</string>
+    <string name="button_outlier_filter">Filter Outliers</string>
+    <string name="button_apply_prices_to_db">Sync Valid Prices to Database</string>
 </resources>

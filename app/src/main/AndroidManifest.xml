@@ -45,6 +45,10 @@
         <activity
             android:name=".ui.BenchmarkActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.ReportsActivity"
+            android:exported="false" />
+
 
         <service
             android:name=".service.SyncService"

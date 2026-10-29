@@ -10,4 +10,7 @@
 .cxx
 local.properties
 *.log
+google-services.json
+/app/google-services.json
+
 
