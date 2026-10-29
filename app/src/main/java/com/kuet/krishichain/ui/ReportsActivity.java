@@ -16,6 +16,7 @@ import com.kuet.krishichain.algo.PriceReport;
 import com.kuet.krishichain.algo.Sorts;
 import com.kuet.krishichain.data.AppDatabase;
 import com.kuet.krishichain.data.FirebaseRepository;
+import com.kuet.krishichain.data.NetworkLoader;
 import com.kuet.krishichain.data.NodeEntity;
 import com.kuet.krishichain.databinding.ActivityReportsBinding;
 
@@ -119,7 +120,13 @@ public class ReportsActivity extends AppCompatActivity {
                 @Override
                 public void onError(String error) {
                     binding.buttonSubmit.setEnabled(true);
-                    Toast.makeText(ReportsActivity.this, error, Toast.LENGTH_LONG).show();
+                    // Local fallback so submission is visible immediately even if Firestore rules are locked
+                    PriceReport localReport = new PriceReport(crop, price, System.currentTimeMillis(), nodeId, "local_user");
+                    currentReports.add(0, localReport);
+                    adapter.setReports(currentReports);
+                    binding.editPrice.setText("");
+                    binding.textReportCount.setText(String.format(Locale.US, "%d reports (added local draft)", currentReports.size()));
+                    Toast.makeText(ReportsActivity.this, "Added locally! (Firestore: " + error + ")", Toast.LENGTH_LONG).show();
                 }
             });
         });
@@ -146,10 +153,10 @@ public class ReportsActivity extends AppCompatActivity {
             binding.buttonSyncToDb.setEnabled(false);
             AppDatabase.IO.execute(() -> {
                 try {
-                    int count = FirebaseRepository.syncCrowdPrices(getApplicationContext());
+                    int count = FirebaseRepository.syncCrowdReports(getApplicationContext(), currentReports);
                     runOnUiThread(() -> {
                         binding.buttonSyncToDb.setEnabled(true);
-                        Toast.makeText(this, "Synced " + count + " crowd prices to local Room database!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Synced " + count + " verified crowd prices to local Room database!", Toast.LENGTH_SHORT).show();
                     });
                 } catch (Exception e) {
                     runOnUiThread(() -> {
@@ -166,14 +173,25 @@ public class ReportsActivity extends AppCompatActivity {
             @Override
             public void onSuccess(List<PriceReport> reports) {
                 currentReports.clear();
-                currentReports.addAll(reports);
+                if (reports != null && !reports.isEmpty()) {
+                    currentReports.addAll(reports);
+                    binding.textReportCount.setText(String.format(Locale.US, "%d live reports from Firestore", reports.size()));
+                } else {
+                    currentReports.addAll(FirebaseRepository.getDemoReports());
+                    binding.textReportCount.setText(String.format(Locale.US, "%d demo crowd reports loaded (includes outliers)", currentReports.size()));
+                }
                 adapter.setReports(currentReports);
-                binding.textReportCount.setText(String.format(Locale.US, "%d live reports received from Firestore", reports.size()));
             }
 
             @Override
             public void onError(Exception e) {
-                binding.textReportCount.setText("Firestore error: " + e.getMessage());
+                if (currentReports.isEmpty()) {
+                    currentReports.addAll(FirebaseRepository.getDemoReports());
+                    adapter.setReports(currentReports);
+                }
+                binding.textReportCount.setText(String.format(Locale.US,
+                        "Firestore: %s\nLoaded %d demo crowd reports (with outliers for demo)",
+                        e.getMessage(), currentReports.size()));
             }
         });
     }
