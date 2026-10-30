@@ -12,5 +12,7 @@ local.properties
 *.log
 google-services.json
 /app/google-services.json
+run_app.bat
+
 
 
