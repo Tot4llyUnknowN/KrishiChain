@@ -67,12 +67,19 @@ public class PriceReportAdapter extends RecyclerView.Adapter<PriceReportAdapter.
             holder.binding.textStatusBadge.setTextColor(Color.parseColor("#2E7D32"));
         }
 
-        String uidSnippet = report.reporterId != null && report.reporterId.length() > 6
-                ? report.reporterId.substring(0, 6) + "..."
-                : (report.reporterId != null ? report.reporterId : "anon");
+        String reporterDisplay;
+        if (report.reporterId != null && report.reporterId.contains("@")) {
+            reporterDisplay = "By: " + report.reporterId;
+        } else if (report.reporterId != null && report.reporterId.startsWith("usr_")) {
+            reporterDisplay = "By: Guest (" + report.reporterId + ")";
+        } else if (report.reporterId != null && report.reporterId.length() > 6) {
+            reporterDisplay = "By: Guest (" + report.reporterId.substring(0, 6) + "...)";
+        } else {
+            reporterDisplay = "By: Guest";
+        }
 
         String formattedDate = dateFormat.format(new Date(report.dateMillis));
-        holder.binding.textReportMeta.setText(String.format("Reported %s · By UID: %s", formattedDate, uidSnippet));
+        holder.binding.textReportMeta.setText(String.format("Reported %s · %s", formattedDate, reporterDisplay));
     }
 
     @Override

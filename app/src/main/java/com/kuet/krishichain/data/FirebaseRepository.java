@@ -50,6 +50,57 @@ public final class FirebaseRepository {
 
     private FirebaseRepository() {}
 
+    /** Returns the currently authenticated FirebaseUser, if any. */
+    public static FirebaseUser getCurrentUser() {
+        return FirebaseAuth.getInstance().getCurrentUser();
+    }
+
+    /** Returns a human-friendly display name or email for the active user. */
+    public static String getUserDisplayName() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return "Not signed in";
+        }
+        if (user.isAnonymous()) {
+            String uid = user.getUid();
+            return "Guest (" + (uid.length() > 6 ? uid.substring(0, 6) : uid) + ")";
+        }
+        String email = user.getEmail();
+        return (email != null && !email.isEmpty()) ? email : "User (" + user.getUid() + ")";
+    }
+
+    /** Signs in with Email and Password. */
+    public static void signInWithEmail(String email, String password, CompleteCallback callback) {
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener(result -> callback.onSuccess("Signed in as " + email))
+                .addOnFailureListener(e -> callback.onError("Sign-in failed: " + e.getMessage()));
+    }
+
+    /** Registers a new account with Email and Password and signs in. */
+    public static void signUpWithEmail(String email, String password, CompleteCallback callback) {
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(result -> callback.onSuccess("Account created and signed in!"))
+                .addOnFailureListener(e -> callback.onError("Registration failed: " + e.getMessage()));
+    }
+
+    /** Signs in anonymously as a guest. */
+    public static void signInAsGuest(CompleteCallback callback) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null && user.isAnonymous()) {
+            callback.onSuccess("Already signed in as guest");
+            return;
+        }
+        auth.signInAnonymously()
+                .addOnSuccessListener(result -> callback.onSuccess("Signed in as guest"))
+                .addOnFailureListener(e -> callback.onError("Guest sign-in failed: " + e.getMessage()));
+    }
+
+    /** Signs out the current user. */
+    public static void signOut() {
+        FirebaseAuth.getInstance().signOut();
+    }
+
     /** Authenticates the user anonymously or returns the existing UID. */
     public static void ensureAuth(@NonNull AuthCallback callback) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -77,12 +128,18 @@ public final class FirebaseRepository {
             @Override
             public void onSuccess(String uid) {
                 FirebaseFirestore db = FirebaseFirestore.getInstance();
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                String email = user != null ? user.getEmail() : null;
+
                 Map<String, Object> data = new HashMap<>();
                 data.put("crop", crop.toLowerCase(Locale.ROOT).trim());
                 data.put("price", price);
                 data.put("nodeId", nodeId);
                 data.put("dateMillis", System.currentTimeMillis());
                 data.put("userId", uid);
+                if (email != null && !email.isEmpty()) {
+                    data.put("userEmail", email);
+                }
 
                 db.collection(COLLECTION_REPORTS)
                         .add(data)
@@ -124,8 +181,10 @@ public final class FirebaseRepository {
             Long nodeId = doc.getLong("nodeId");
             Long dateMillis = doc.getLong("dateMillis");
             String userId = doc.getString("userId");
+            String userEmail = doc.getString("userEmail");
+            String reporter = (userEmail != null && !userEmail.isEmpty()) ? userEmail : userId;
             if (crop != null && price != null && nodeId != null && dateMillis != null) {
-                list.add(new PriceReport(crop, price, dateMillis, nodeId.intValue(), userId));
+                list.add(new PriceReport(crop, price, dateMillis, nodeId.intValue(), reporter));
             }
         }
         return list;

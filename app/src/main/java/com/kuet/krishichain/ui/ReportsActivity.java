@@ -2,6 +2,7 @@ package com.kuet.krishichain.ui;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -9,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.kuet.krishichain.R;
 import com.kuet.krishichain.algo.OutlierFilter;
@@ -19,6 +21,7 @@ import com.kuet.krishichain.data.FirebaseRepository;
 import com.kuet.krishichain.data.NetworkLoader;
 import com.kuet.krishichain.data.NodeEntity;
 import com.kuet.krishichain.databinding.ActivityReportsBinding;
+import com.kuet.krishichain.databinding.DialogAuthBinding;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,6 +88,9 @@ public class ReportsActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
+        updateAuthUi();
+        binding.buttonManageAuth.setOnClickListener(v -> showAuthDialog());
+
         binding.buttonSubmit.setOnClickListener(v -> {
             String priceStr = binding.editPrice.getText().toString().trim();
             if (TextUtils.isEmpty(priceStr)) {
@@ -121,7 +127,11 @@ public class ReportsActivity extends AppCompatActivity {
                 public void onError(String error) {
                     binding.buttonSubmit.setEnabled(true);
                     // Local fallback so submission is visible immediately even if Firestore rules are locked
-                    PriceReport localReport = new PriceReport(crop, price, System.currentTimeMillis(), nodeId, "local_user");
+                    FirebaseUser current = FirebaseRepository.getCurrentUser();
+                    String reporter = (current != null && !current.isAnonymous() && current.getEmail() != null)
+                            ? current.getEmail()
+                            : (current != null ? current.getUid() : "local_user");
+                    PriceReport localReport = new PriceReport(crop, price, System.currentTimeMillis(), nodeId, reporter);
                     currentReports.add(0, localReport);
                     adapter.setReports(currentReports);
                     binding.editPrice.setText("");
@@ -194,6 +204,125 @@ public class ReportsActivity extends AppCompatActivity {
                         e.getMessage(), currentReports.size()));
             }
         });
+    }
+
+    private void updateAuthUi() {
+        FirebaseUser user = FirebaseRepository.getCurrentUser();
+        if (user != null && !user.isAnonymous() && user.getEmail() != null) {
+            binding.textAuthUser.setText("👤 " + user.getEmail());
+            binding.buttonManageAuth.setText("Account");
+        } else if (user != null && user.isAnonymous()) {
+            String uid = user.getUid();
+            binding.textAuthUser.setText("👤 Guest (" + uid.substring(0, Math.min(6, uid.length())) + "...)");
+            binding.buttonManageAuth.setText("Sign In");
+        } else {
+            binding.textAuthUser.setText("👤 Guest Mode");
+            binding.buttonManageAuth.setText("Sign In");
+        }
+    }
+
+    private void showAuthDialog() {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        DialogAuthBinding dBinding = DialogAuthBinding.inflate(getLayoutInflater());
+        builder.setView(dBinding.getRoot());
+        android.app.AlertDialog dialog = builder.create();
+
+        FirebaseUser current = FirebaseRepository.getCurrentUser();
+        if (current != null && !current.isAnonymous() && current.getEmail() != null) {
+            dBinding.textCurrentStatus.setText("Currently signed in as: " + current.getEmail());
+            dBinding.editAuthEmail.setText(current.getEmail());
+            dBinding.buttonSignOut.setVisibility(View.VISIBLE);
+        } else if (current != null && current.isAnonymous()) {
+            String uid = current.getUid();
+            dBinding.textCurrentStatus.setText("Currently signed in as: Guest (" + uid.substring(0, Math.min(6, uid.length())) + "...)");
+            dBinding.buttonSignOut.setVisibility(View.VISIBLE);
+        } else {
+            dBinding.textCurrentStatus.setText("Currently: Not signed in");
+            dBinding.buttonSignOut.setVisibility(View.GONE);
+        }
+
+        dBinding.buttonSignIn.setOnClickListener(v -> {
+            String email = dBinding.editAuthEmail.getText() != null ? dBinding.editAuthEmail.getText().toString().trim() : "";
+            String password = dBinding.editAuthPassword.getText() != null ? dBinding.editAuthPassword.getText().toString().trim() : "";
+            if (TextUtils.isEmpty(email) || !email.contains("@")) {
+                dBinding.editAuthEmail.setError("Enter a valid email");
+                return;
+            }
+            if (TextUtils.isEmpty(password) || password.length() < 6) {
+                dBinding.editAuthPassword.setError("Password must be at least 6 characters");
+                return;
+            }
+            dBinding.buttonSignIn.setEnabled(false);
+            FirebaseRepository.signInWithEmail(email, password, new FirebaseRepository.CompleteCallback() {
+                @Override
+                public void onSuccess(String message) {
+                    dialog.dismiss();
+                    updateAuthUi();
+                    Toast.makeText(ReportsActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String error) {
+                    dBinding.buttonSignIn.setEnabled(true);
+                    Toast.makeText(ReportsActivity.this, error, Toast.LENGTH_LONG).show();
+                }
+            });
+        });
+
+        dBinding.buttonRegister.setOnClickListener(v -> {
+            String email = dBinding.editAuthEmail.getText() != null ? dBinding.editAuthEmail.getText().toString().trim() : "";
+            String password = dBinding.editAuthPassword.getText() != null ? dBinding.editAuthPassword.getText().toString().trim() : "";
+            if (TextUtils.isEmpty(email) || !email.contains("@")) {
+                dBinding.editAuthEmail.setError("Enter a valid email");
+                return;
+            }
+            if (TextUtils.isEmpty(password) || password.length() < 6) {
+                dBinding.editAuthPassword.setError("Password must be at least 6 characters");
+                return;
+            }
+            dBinding.buttonRegister.setEnabled(false);
+            FirebaseRepository.signUpWithEmail(email, password, new FirebaseRepository.CompleteCallback() {
+                @Override
+                public void onSuccess(String message) {
+                    dialog.dismiss();
+                    updateAuthUi();
+                    Toast.makeText(ReportsActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String error) {
+                    dBinding.buttonRegister.setEnabled(true);
+                    Toast.makeText(ReportsActivity.this, error, Toast.LENGTH_LONG).show();
+                }
+            });
+        });
+
+        dBinding.buttonGuest.setOnClickListener(v -> {
+            dBinding.buttonGuest.setEnabled(false);
+            FirebaseRepository.signInAsGuest(new FirebaseRepository.CompleteCallback() {
+                @Override
+                public void onSuccess(String message) {
+                    dialog.dismiss();
+                    updateAuthUi();
+                    Toast.makeText(ReportsActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String error) {
+                    dBinding.buttonGuest.setEnabled(true);
+                    Toast.makeText(ReportsActivity.this, error, Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        dBinding.buttonSignOut.setOnClickListener(v -> {
+            FirebaseRepository.signOut();
+            dialog.dismiss();
+            updateAuthUi();
+            Toast.makeText(ReportsActivity.this, "Signed out", Toast.LENGTH_SHORT).show();
+        });
+
+        dialog.show();
     }
 
     @Override
