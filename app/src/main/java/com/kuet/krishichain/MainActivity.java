@@ -82,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
                 v -> startActivity(new Intent(this, BottleneckActivity.class)));
         binding.buttonPlanner.setOnClickListener(
                 v -> startActivity(new Intent(this, PlannerActivity.class)));
+        binding.buttonReports.setOnClickListener(
+                v -> startActivity(new Intent(this, com.kuet.krishichain.ui.ReportsActivity.class)));
         binding.buttonBenchmark.setOnClickListener(
                 v -> startActivity(new Intent(this, BenchmarkActivity.class)));
         binding.buttonSync.setOnClickListener(v -> startSync());

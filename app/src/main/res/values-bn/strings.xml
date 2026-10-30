@@ -1,0 +1,160 @@
+<resources>
+    <string name="app_name">কৃষিচেইন</string>
+
+    <string name="home_title">কৃষিচেইন</string>
+    <string name="home_subtitle">আপনার ফসলের জন্য সর্বাধিক লাভজনক বাজার খুঁজুন</string>
+    <string name="label_crop">ফসল</string>
+    <string name="label_quantity">পরিমাণ (কেজি)</string>
+    <string name="hint_quantity">যেমন ১০০০</string>
+    <string name="label_origin">আপনার অবস্থান</string>
+    <string name="button_find">সেরা বাজার খুঁজুন</string>
+
+    <string name="status_loading">নেটওয়ার্ক লোড হচ্ছে…</string>
+    <string name="status_loaded">%1$dটি স্থান, %2$dটি সড়ক, %3$dটি দাম লোড হয়েছে</string>
+    <string name="status_error">ডাটা লোড করা যায়নি: %1$s</string>
+    <string name="warning_dummy">নমুনা দাম (ডেমো) - বাস্তব বাজারের তথ্য নয়</string>
+    <string name="error_quantity">০ এর বেশি পরিমাণ লিখুন</string>
+    <string name="toast_selected">%1$s, %2$s কেজি, %3$s থেকে</string>
+
+    <string name="ranking_title">সেরা বাজারসমূহ</string>
+    <string name="ranking_summary">%1$s · %2$,.0f কেজি · %3$s থেকে</string>
+    <string name="ranking_empty">এই ফসলের কোনো দাম পাওয়া যায়নি।</string>
+    <string name="ranking_error">গণনা করা যায়নি: %1$s</string>
+    <string name="ranking_insight_better">সেরা বাজারে (%1$s) বিক্রি করলে নিকটতম বাজারের (%3$s) চেয়ে ৳%2$,.0f বেশি লাভ হবে।</string>
+    <string name="ranking_insight_same">আপনার নিকটতম বাজারই (%1$s) সবচেয়ে লাভজনক পছন্দ।</string>
+    <string name="tag_best">সেরা</string>
+    <string name="tag_nearest">নিকটতম</string>
+    <string name="tag_best_nearest">সেরা ও নিকটতম</string>
+    <string name="item_profit">৳%1$,.0f</string>
+    <string name="item_price">দর ৳%1$.1f/কেজি</string>
+    <string name="item_route">%1$.0f কিমি · %2$s</string>
+    <string name="item_costs">পরিবহন ৳%1$,.0f · টোল ৳%2$,.0f · পচন %3$.1f%%</string>
+    <string name="duration_hm">%1$d ঘণ্টা %2$d মিনিট</string>
+    <string name="duration_min">%1$d মিনিট</string>
+    <string name="toast_route_soon">%1$s এর পথের বিবরণ</string>
+
+    <string-array name="crop_names">
+        <item>আলু</item>
+        <item>টমেটো</item>
+        <item>পেঁয়াজ</item>
+    </string-array>
+    <string name="route_title">যাত্রাপথ</string>
+    <string name="route_summary">%1$s · %2$,.0f কেজি · %3$s → %4$s</string>
+    <string name="route_cheapest">সাশ্রয়ী পথ</string>
+    <string name="route_fastest">দ্রুততম পথ</string>
+    <string name="route_totals">%1$.0f কিমি · %2$s · পরিবহন ৳%3$,.0f · টোল ৳%4$,.0f · পচন %5$.1f%%</string>
+    <string name="route_profit">মোট নিট লাভ ৳%1$,.0f</string>
+    <string name="route_compare">সাশ্রয়ী: ৳%1$,.0f লাভ, %2$s। দ্রুততম: ৳%3$,.0f লাভ, %4$s।</string>
+    <string name="route_same">সাশ্রয়ী এবং দ্রুততম একই পথ।</string>
+    <string name="route_here">আপনি ইতিমধ্যেই এই বাজারে আছেন। স্থানীয় বিক্রয়ে কোনো পরিবহন খরচ নেই।</string>
+    <string name="route_error">পথ গণনা করা যায়নি: %1$s</string>
+    <string name="step_title">%1$s → %2$s</string>
+    <string name="step_detail">%1$.0f কিমি · %2$s · ৳%3$,.0f</string>
+    <string name="button_share">শেয়ার</string>
+    <string name="button_map">ম্যাপ অ্যাপ</string>
+    <string name="button_call">কল করুন</string>
+    <string name="share_chooser">পরিকল্পনা শেয়ার করুন</string>
+    <string name="share_text">কৃষিচেইন পরিকল্পনা: বিক্রি %1$,.0f কেজি %2$s, বাজার: %3$s (%4$s থেকে)। পথ: %5$s। %6$.0f কিমি, %7$s। প্রত্যাশিত নিট লাভ ৳%8$,.0f।</string>
+    <string name="toast_no_app">এই কাজের জন্য কোনো উপযুক্ত অ্যাপ পাওয়া যায়নি</string>
+    <string name="lab_title">গ্রাফ ল্যাব</string>
+    <string name="lab_source">উৎস (অথবা মানচিত্রে ট্যাপ করুন)</string>
+    <string name="lab_dest">গন্তব্য</string>
+    <string name="lab_none">— কোনোটি নয় —</string>
+    <string name="lab_loading">নেটওয়ার্ক লোড হচ্ছে…</string>
+    <string name="lab_ready">একটি অ্যালগরিদম বেছে নিয়ে রান চাপুন</string>
+    <string name="lab_legend">সবুজ=গ্রাম · কমলা=হাব · বেগুনি=বাজার · নীল বলয়=সম্পন্ন · কমলা বলয়=সীমানা · সংখ্যা=টন প্রতি খরচ</string>
+    <string name="lab_progress">ধাপ %1$d / %2$d</string>
+    <string name="lab_result_path">%1$s → %2$s: টন প্রতি ৳%3$,.0f</string>
+    <string name="lab_result_run">%1$d ধাপ পর সম্পন্ন হয়েছে। পথ দেখতে একটি গন্তব্য বেছে নিন।</string>
+    <string name="lab_unreachable">%1$s এ পৌঁছানো সম্ভব নয়</string>
+    <string name="lab_result_cycle">নেতিবাচক চক্র শনাক্ত হয়েছে: %1$s। কোনো ক্ষুদ্রতম পথ নেই।</string>
+    <string name="lab_result_mst">%1$dটি সড়ক · মোট ৳%2$,.0f · %3$dটি অপারেশন</string>
+    <string name="button_run">রান</string>
+    <string name="button_play">প্লে</string>
+    <string name="button_pause">পজ</string>
+    <string name="button_step">ধাপ</string>
+    <string name="button_end">শেষ</string>
+    <string name="button_graph_lab">গ্রাফ ল্যাব</string>
+
+    <string-array name="lab_algorithms">
+        <item>ডায়াক্সট্রা (সবচেয়ে কম খরচ)</item>
+        <item>বেলম্যান-ফোর্ড (নিট খরচ, ফেরত রিবেট সহ)</item>
+        <item>বেলম্যান-ফোর্ড: নেতিবাচক চক্র ডেমো</item>
+        <item>ক্রুসকল (ন্যূনতম সংযোগ সড়ক নেটওয়ার্ক)</item>
+        <item>প্রিম (ন্যূনতম সংযোগ সড়ক নেটওয়ার্ক)</item>
+    </string-array>
+    <string name="bn_title">বটলনেক বিশ্লেষক</string>
+    <string name="bn_cluster">কৃষক অঞ্চল</string>
+    <string name="bn_all">সকল গ্রাম</string>
+    <string name="bn_ready">একটি অঞ্চল বেছে নিয়ে রান চাপুন</string>
+    <string name="bn_legend">সায়ান = প্রবাহিত সরবরাহ · পুরু লাল = বাধাগ্রস্ত সড়ক (মিনিমাম কাট)</string>
+    <string name="bn_result">সর্বোচ্চ প্রবাহ: %1$,.0f টন/দিন</string>
+    <string name="bn_cut_header">বাধাগ্রস্ত সড়কসমূহ (মিনিমাম কাট), মোট %1$,.0f টন/দিন:</string>
+    <string name="bn_cut_line">• %1$s → %2$s  (%3$,.0f টন/দিন, পূর্ণ ক্ষমতা)</string>
+    <string name="bn_hint">কেবল মিনিমাম কাটের সড়ক সংস্কার করলেই সর্বোচ্চ প্রবাহ বৃদ্ধি পাবে। অন্য কোনো সড়ক সংস্কারে কোনো পরিবর্তন হবে না।</string>
+    <string name="bn_farms">সকল খামার (সুপার-সোর্স)</string>
+    <string name="bn_demand">বাজার চাহিদা (সুপার-সিঙ্ক)</string>
+    <string name="bn_assume">অনুমান: প্রতিটি বাজার দৈনিক %1$d টন শোষণ করে।</string>
+
+    <string name="planner_title">নেটওয়ার্ক প্ল্যানার</string>
+    <string name="planner_kruskal">ক্রুসকল</string>
+    <string name="planner_prim">প্রিম</string>
+    <string name="planner_summary">নেটওয়ার্কের মোট সড়ক: %1$d · সবগুলি নির্মাণে: %2$,.0f কিমি</string>
+    <string name="planner_k">ক্রুসকল: %1$dটি সড়ক · %2$,.1f কিমি · %3$dটি অপারেশন · %4$.1f µs</string>
+    <string name="planner_p">প্রিম (%1$s থেকে): %2$dটি সড়ক · %3$,.1f কিমি · %4$dটি অপারেশন · %5$.1f µs</string>
+    <string name="planner_saving">এই সংযোগ বৃক্ষে সম্পূর্ণ সড়ক নির্মাণের চেয়ে %1$.0f%% কম রাস্তা প্রয়োজন। গাণিতিক তত্ত্বে মোট দৈর্ঘ্য সমান; উভয় বৃক্ষ %2$s।</string>
+    <string name="planner_same">অভিন্ন</string>
+    <string name="planner_diff">আলাদা (সমান দৈর্ঘ্যের বিকল্প সড়ক)</string>
+    <string name="planner_note">ওজন = সড়কের দৈর্ঘ্য (কিমি), যা নির্মাণ খরচের পরিমাপক। প্রিমের শুরুর বিন্দু পরিবর্তন করতে মানচিত্রে ট্যাপ করুন।</string>
+    <string name="button_bottleneck">বটলনেক বিশ্লেষক</string>
+    <string name="button_planner">নেটওয়ার্ক প্ল্যানার</string>
+    <string name="sync_channel_name">ডাটা সিঙ্ক</string>
+    <string name="sync_notif_title">কৃষিচেইন</string>
+    <string name="sync_notif_text">বাজারের তথ্য সিঙ্ক করা হচ্ছে…</string>
+    <string name="sync_running">সিঙ্ক চলছে…</string>
+    <string name="sync_done">সিঙ্ক সম্পন্ন: %1$s</string>
+    <string name="sync_idle">এখনও সিঙ্ক করা হয়নি</string>
+    <string name="sync_no_notif">বিজ্ঞপ্তি বন্ধ রয়েছে, তবে ব্যাকগ্রাউন্ড সিঙ্ক চালু আছে।</string>
+    <string name="net_online">ইন্টারনেট: অনলাইন</string>
+    <string name="net_offline">ইন্টারনেট: অফলাইন (স্থানীয় ডাটাবেজ থেকে সম্পূর্ণ সচল)</string>
+    <string name="button_sync">এখনই সিঙ্ক করুন</string>
+    <string name="button_benchmark">বেঞ্চমার্ক</string>
+
+    <string name="bm_title">বেঞ্চমার্ক</string>
+    <string name="bm_note">ফ্লয়েড-ওয়ার্শাল বনাম জনসন: নেতিবাচক ধারাসহ অল-পেয়ার্স শর্টেস্ট পাথ। N বার রানের সেরা সময় (মিলি-সেকেন্ডে)। "real" হলো আপনার ৪০-হাবের প্রকৃত গ্রাফ; বাকিগুলো র্যান্ডম গ্রাফ।</string>
+    <string name="button_bm_run">বেঞ্চমার্ক শুরু করুন</string>
+    <string name="bm_running">চলছে…</string>
+    <string name="bm_done">সম্পন্ন হয়েছে। MISMATCH না থাকলে উভয় অ্যালগরিদমের ফলাফল সম্পূর্ণ অভিন্ন।</string>
+    <string name="weather_none">আবহাওয়া: তথ্য নেই (আবহাওয়া রিফ্রেশ চাপুন)</string>
+    <string name="weather_real">আবহাওয়া: বাস্তব উপাত্ত (%1$s), সর্বোচ্চ বৃষ্টিপাত %2$.1f মিমি</string>
+    <string name="weather_sim">আবহাওয়া: কৃত্রিম বর্ষা ডেমো, দক্ষিণ-পশ্চিমাঞ্চলে %1$.0f মিমি বৃষ্টি</string>
+    <string name="weather_ok">আবহাওয়া আপডেট হয়েছে</string>
+    <string name="weather_fail">আবহাওয়া অফলাইন, সংরক্ষিত তথ্য ব্যবহৃত হচ্ছে</string>
+    <string name="weather_refreshing">আবহাওয়া রিফ্রেশ করা হচ্ছে…</string>
+    <string name="button_weather">আবহাওয়া রিফ্রেশ</string>
+    <string name="button_sim_on">বর্ষা দুর্যোগ ডেমো</string>
+    <string name="button_sim_off">আবহাওয়া স্বাভাবিক করুন</string>
+    <string name="button_alerts">বাজার দর পরিবর্তন পরীক্ষা</string>
+    <string name="alerts_started">দর পরীক্ষা করা হচ্ছে। প্রথমবারে শুধু ভিত্তি মূল্য সংরক্ষিত হয়।</string>
+
+    <string name="alert_channel_name">মূল্য সতর্কতা</string>
+    <string name="alert_title">মূল্য পরিবর্তন সতর্কতা</string>
+    <string name="alert_up">বৃদ্ধি</string>
+    <string name="alert_down">হ্রাস</string>
+    <string name="alert_text">%1$s এর গড় মূল্য %2$s পেয়েছে %3$.1f%% (৳%4$.1f → ৳%5$.1f প্রতি কেজি)</string>
+
+    <!-- Firebase Crowd Reports -->
+    <string name="button_reports">জনতা বাজার দর প্রতিবেদন</string>
+    <string name="title_reports">বাজার দর প্রতিবেদন</string>
+    <string name="report_submit_heading">বাজার দর রিপোর্ট করুন</string>
+    <string name="report_submit_sub">আপনার স্থানীয় বাজার হাব থেকে ফসলের বর্তমান বাজার দর নেটওয়ার্কে যুক্ত করুন</string>
+    <string name="label_market_hub">বাজার হাব</string>
+    <string name="label_price_bdt">দর (৳/কেজি)</string>
+    <string name="hint_price">যেমন ৩২.৫</string>
+    <string name="button_submit_report">দর রিপোর্ট সাবমিট করুন</string>
+    <string name="report_stream_heading">সরাসরি বাজার প্রতিবেদনসমূহ</string>
+    <string name="reports_loading">ফায়ারস্টোরে সংযুক্ত হচ্ছে…</string>
+    <string name="button_mergesort">মার্জ সর্ট</string>
+    <string name="button_outlier_filter">আউটলায়ার ফিল্টার</string>
+    <string name="button_apply_prices_to_db">যাচাইকৃত দর ডাটাবেজে সংরক্ষণ করুন</string>
+</resources>

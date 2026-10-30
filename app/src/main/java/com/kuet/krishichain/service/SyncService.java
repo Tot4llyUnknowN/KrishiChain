@@ -71,7 +71,16 @@ public class SyncService extends Service {
                     Log.w(TAG, "Weather refresh failed: " + e.getMessage());
                     weather = getString(R.string.weather_fail);
                 }
-                summary = summarizePrices() + " · " + weather;
+                String crowdSync = "";
+                try {
+                    int synced = com.kuet.krishichain.data.FirebaseRepository.syncCrowdPrices(app);
+                    if (synced > 0) {
+                        crowdSync = " · " + synced + " crowd prices synced";
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "Firebase sync skipped or offline: " + e.getMessage());
+                }
+                summary = summarizePrices() + " · " + weather + crowdSync;
             } catch (Exception e) {
                 Log.e(TAG, "Sync failed", e);
                 summary = "Sync failed: " + e.getMessage();
