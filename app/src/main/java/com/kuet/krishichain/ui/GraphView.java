@@ -68,6 +68,12 @@ public class GraphView extends View {
     private List<Integer> cycle = new ArrayList<>();
 
     private final List<int[]> cutPairs = new ArrayList<>();
+    private boolean darkCanvas = false;
+
+    public void setDarkCanvas(boolean dark) {
+        this.darkCanvas = dark;
+        invalidate();
+    }
 
     /** Roads of the minimum cut, drawn thick red when the replay has finished. */
     public void setCut(List<int[]> pairs) {
@@ -479,8 +485,8 @@ public class GraphView extends View {
                 linePaint.setStrokeWidth(4 * dp);
                 break;
             default:
-                linePaint.setColor(0xFFBDBDBD);
-                linePaint.setStrokeWidth(1 * dp);
+                linePaint.setColor(darkCanvas ? 0xFF3D6FD1 : 0xFFBDBDBD);
+                linePaint.setStrokeWidth((darkCanvas ? 2f : 1f) * dp);
                 break;
         }
     }
@@ -507,7 +513,8 @@ public class GraphView extends View {
     @Override
     protected void onDraw(Canvas c) {
         super.onDraw(c);
-        c.drawColor(0xFFFAFAFA);
+        c.drawColor(darkCanvas ? 0xFF101418 : 0xFFFAFAFA);
+        if (darkCanvas) { namePaint.setColor(0xFFE0E0E0); distPaint.setColor(0xFF80D8FF); } else { namePaint.setColor(0xFF424242); distPaint.setColor(0xFF0D47A1); }
         if (n == 0) {
             return;
         }
@@ -529,7 +536,7 @@ public class GraphView extends View {
 
         // Final shortest path.
         if (pathNodes.size() > 1) {
-            linePaint.setColor(0xFF00C853);
+            linePaint.setColor(darkCanvas ? 0xFF00E676 : 0xFF00C853);
             linePaint.setStrokeWidth(6 * dp);
             for (int i = 0; i + 1 < pathNodes.size(); i++) {
                 int a = pathNodes.get(i);

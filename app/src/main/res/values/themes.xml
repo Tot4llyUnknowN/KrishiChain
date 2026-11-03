@@ -1,9 +1,83 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.KrishiChain" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <!-- Base application theme forced to Light Mode everywhere -->
+    <style name="Base.Theme.KrishiChain" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/pri</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/pri2</item>
+        <item name="colorOnPrimaryContainer">@color/pri</item>
+
+        <item name="colorSecondary">@color/amb</item>
+        <item name="colorOnSecondary">@color/amb_text</item>
+
+        <item name="android:colorBackground">@color/home_bg</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorSurfaceVariant">@color/home_mint_tile</item>
+        <item name="colorOnSurfaceVariant">@color/mut</item>
+        <item name="colorOutline">#DEE8DF</item>
+
+        <item name="android:statusBarColor">@color/home_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
 
     <style name="Theme.KrishiChain" parent="Base.Theme.KrishiChain" />
+
+    <!-- Mockup Card Style (.cd) -->
+    <style name="Widget.KrishiChain.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">14dp</item>
+        <item name="cardElevation">1dp</item>
+        <item name="strokeColor">#DEE8DF</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardBackgroundColor">@color/white</item>
+    </style>
+
+    <!-- Mockup Green Button (.bt) -->
+    <style name="Widget.KrishiChain.Button.Green" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/pri</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="cornerRadius">10dp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <!-- Mockup Outlined Button (.bt .o) -->
+    <style name="Widget.KrishiChain.Button.OutlinedGreen" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="backgroundTint">@color/transparent</item>
+        <item name="strokeColor">@color/pri</item>
+        <item name="strokeWidth">1.5dp</item>
+        <item name="android:textColor">@color/pri</item>
+        <item name="cornerRadius">10dp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <!-- Mockup Amber Button (.bt .a) -->
+    <style name="Widget.KrishiChain.Button.Amber" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/amb</item>
+        <item name="android:textColor">@color/amb_text</item>
+        <item name="cornerRadius">10dp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <!-- Mockup Outlined Control Button (.ctr .o) -->
+    <style name="Widget.KrishiChain.Button.OutlinedControl" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="backgroundTint">@color/card</item>
+        <item name="strokeColor">@color/pri</item>
+        <item name="strokeWidth">1.5dp</item>
+        <item name="android:textColor">@color/pri</item>
+        <item name="cornerRadius">10dp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
 </resources>

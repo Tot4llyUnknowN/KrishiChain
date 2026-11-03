@@ -2,7 +2,9 @@ package com.kuet.krishichain.ui;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -22,19 +24,21 @@ import com.kuet.krishichain.databinding.ActivityPlannerBinding;
 import com.kuet.krishichain.domain.NetworkSnapshot;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 public class PlannerActivity extends AppCompatActivity {
-    private static final int TIMING_REPS = 300;
+    private static final int TIMING_REPS = 50;
 
     private ActivityPlannerBinding binding;
     private NetworkSnapshot snap;
-    private Graph roads;           // one undirected road per pair, weight = km
-    private double allRoadsKm;
-    private int roadCount;
+    private Graph roads;
+    private double allRoadsKm = 0;
+    private int roadCount = 0;
     private int primStart = 0;
     private MstResult kruskal;
     private MstResult prim;
+    private boolean isPrimSelected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,23 +53,20 @@ public class PlannerActivity extends AppCompatActivity {
             return insets;
         });
 
+        binding.buttonBack.setOnClickListener(v -> finish());
         binding.graphView.setDelayMs(150);
         binding.graphView.setListener(new GraphView.Listener() {
             @Override
             public void onNodeTapped(int index) {
-                if (roads == null) {
-                    return;
-                }
-                primStart = index; // tap = choose Prim's starting hub
-                binding.radioPrim.setChecked(true);
+                if (roads == null) return;
+                primStart = index;
+                isPrimSelected = true;
                 compute();
                 startReplay();
             }
 
             @Override
-            public void onProgress(int applied, int total) {
-                binding.textProgress.setText(getString(R.string.lab_progress, applied, total));
-            }
+            public void onProgress(int applied, int total) {}
 
             @Override
             public void onPlayStateChanged(boolean playing) {
@@ -73,18 +74,23 @@ public class PlannerActivity extends AppCompatActivity {
             }
         });
 
-        binding.radioAlgo.setOnCheckedChangeListener((group, id) -> {
-            if (roads != null) {
-                startReplay();
-            }
+        binding.cardKruskal.setOnClickListener(v -> {
+            isPrimSelected = false;
+            startReplay();
         });
+
+        binding.cardPrim.setOnClickListener(v -> {
+            isPrimSelected = true;
+            startReplay();
+        });
+
+        binding.buttonViewDetails.setOnClickListener(v -> showMstDetails());
         binding.buttonReplay.setOnClickListener(v -> startReplay());
         binding.buttonPlay.setOnClickListener(v -> binding.graphView.togglePlay());
         binding.buttonStep.setOnClickListener(v -> {
             binding.graphView.pause();
             binding.graphView.stepOnce();
         });
-        binding.buttonEnd.setOnClickListener(v -> binding.graphView.jumpToEnd());
 
         final Context app = getApplicationContext();
         AppDatabase.IO.execute(() -> {
@@ -100,7 +106,7 @@ public class PlannerActivity extends AppCompatActivity {
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     if (!isDestroyed()) {
-                        binding.textCompare.setText(e.getMessage());
+                        Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -111,15 +117,12 @@ public class PlannerActivity extends AppCompatActivity {
         snap = s;
         GraphBinder.bind(binding.graphView, s);
 
-        // One undirected road per pair, weighted by km.
         roads = new Graph(s.nodes.size());
         Set<Long> seen = new HashSet<>();
         for (EdgeEntity e : s.edges()) {
             Integer u = s.idToIndex.get(e.fromId);
             Integer v = s.idToIndex.get(e.toId);
-            if (u == null || v == null) {
-                continue;
-            }
+            if (u == null || v == null) continue;
             if (seen.add(Math.min(u, v) * 1000L + Math.max(u, v))) {
                 roads.addEdge(u, v, e.km);
                 allRoadsKm += e.km;
@@ -132,63 +135,44 @@ public class PlannerActivity extends AppCompatActivity {
             }
         }
 
-        binding.buttonReplay.setEnabled(true);
-        binding.buttonPlay.setEnabled(true);
-        binding.buttonStep.setEnabled(true);
-        binding.buttonEnd.setEnabled(true);
         compute();
         startReplay();
     }
 
-    private static Set<Long> keys(MstResult r) {
-        Set<Long> set = new HashSet<>();
-        for (Edge e : r.edges) {
-            set.add(Math.min(e.from, e.to) * 1000L + Math.max(e.from, e.to));
-        }
-        return set;
-    }
-
-    /** Runs both algorithms, times them, and writes the comparison. */
     private void compute() {
         kruskal = Kruskal.run(roads);
         prim = Prim.run(roads, primStart);
 
-        long t0 = System.nanoTime();
-        for (int i = 0; i < TIMING_REPS; i++) {
-            Kruskal.run(roads);
-        }
-        double kUs = (System.nanoTime() - t0) / 1000.0 / TIMING_REPS;
-        t0 = System.nanoTime();
-        for (int i = 0; i < TIMING_REPS; i++) {
-            Prim.run(roads, primStart);
-        }
-        double pUs = (System.nanoTime() - t0) / 1000.0 / TIMING_REPS;
-
-        double saving = allRoadsKm <= 0 ? 0
-                : (allRoadsKm - kruskal.totalCost) / allRoadsKm * 100.0;
-        String same = getString(keys(kruskal).equals(keys(prim))
-                ? R.string.planner_same : R.string.planner_diff);
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(getString(R.string.planner_summary, roadCount, allRoadsKm)).append('\n');
-        sb.append(getString(R.string.planner_k, kruskal.edges.size(), kruskal.totalCost,
-                kruskal.operations, kUs)).append('\n');
-        sb.append(getString(R.string.planner_p, snap.nodes.get(primStart).name,
-                prim.edges.size(), prim.totalCost, prim.operations, pUs)).append('\n');
-        sb.append(getString(R.string.planner_saving, saving, same)).append("\n\n");
-        sb.append(getString(R.string.planner_note));
-        binding.textCompare.setText(sb.toString());
+        binding.textKruskalKm.setText(String.format(Locale.US, "%,.0f km", kruskal.totalCost));
+        binding.textPrimKm.setText(String.format(Locale.US, "%,.0f km", prim.totalCost));
     }
 
     private void startReplay() {
-        if (kruskal == null) {
-            return;
-        }
-        if (binding.radioPrim.isChecked()) {
+        if (kruskal == null) return;
+        if (isPrimSelected) {
             binding.graphView.loadSteps(prim.steps, false, primStart, null);
         } else {
             binding.graphView.loadSteps(kruskal.steps, false, -1, null);
         }
         binding.graphView.play();
+    }
+
+    private void showMstDetails() {
+        if (kruskal == null) return;
+        double saving = allRoadsKm <= 0 ? 0 : (allRoadsKm - kruskal.totalCost) / allRoadsKm * 100.0;
+        String message = String.format(Locale.US,
+                "Kruskal MST: %d roads · %,.1f km · %d operations\n" +
+                "Prim MST (from %s): %d roads · %,.1f km · %d operations\n\n" +
+                "The minimum spanning tree saves %.0f%% road construction compared to building all roads.\n" +
+                "Totals are equal by theory.",
+                kruskal.edges.size(), kruskal.totalCost, kruskal.operations,
+                snap.nodes.get(primStart).name, prim.edges.size(), prim.totalCost, prim.operations,
+                saving);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Feeder Network Details")
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show();
     }
 }

@@ -9,7 +9,6 @@ import com.kuet.krishichain.R;
 import com.kuet.krishichain.data.AppDatabase;
 import com.kuet.krishichain.data.WeatherEntity;
 import com.kuet.krishichain.data.WeatherRepository;
-import com.kuet.krishichain.databinding.ActivityMainBinding;
 import com.kuet.krishichain.worker.PriceAlertScheduler;
 
 import java.text.SimpleDateFormat;
@@ -17,56 +16,91 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/** Weather and alert buttons of the Home screen. */
+/** Weather and alert utilities of the Home screen. */
 public class HomeExtras {
     private final AppCompatActivity activity;
-    private final ActivityMainBinding binding;
     private boolean simulatedNow = false;
+    private String lastWeatherText = "";
 
-    public HomeExtras(AppCompatActivity activity, ActivityMainBinding binding) {
+    public HomeExtras(AppCompatActivity activity) {
         this.activity = activity;
-        this.binding = binding;
     }
 
     public void init() {
         final Context app = activity.getApplicationContext();
         PriceAlertScheduler.schedule(app);
+        refreshWeatherText();
+        refreshWeatherSilently();
+    }
 
-        binding.buttonWeather.setOnClickListener(v -> {
-            binding.textWeather.setText(R.string.weather_refreshing);
-            AppDatabase.IO.execute(() -> {
-                boolean ok = true;
-                try {
-                    WeatherRepository.refresh(app);
-                } catch (Exception e) {
-                    ok = false;
+    /** Silent automatic background refresh for live weather */
+    public void refreshWeatherSilently() {
+        final Context app = activity.getApplicationContext();
+        AppDatabase.IO.execute(() -> {
+            try {
+                WeatherRepository.refresh(app);
+            } catch (Exception ignored) {
+            }
+            activity.runOnUiThread(this::refreshWeatherText);
+        });
+    }
+
+    public void refreshWeather(Runnable onComplete) {
+        final Context app = activity.getApplicationContext();
+        AppDatabase.IO.execute(() -> {
+            boolean ok = true;
+            try {
+                WeatherRepository.refresh(app);
+            } catch (Exception e) {
+                ok = false;
+            }
+            final boolean success = ok;
+            activity.runOnUiThread(() -> {
+                if (!success) {
+                    Toast.makeText(activity, R.string.weather_fail, Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(activity, R.string.weather_ok, Toast.LENGTH_SHORT).show();
                 }
-                final boolean success = ok;
-                activity.runOnUiThread(() -> {
-                    if (!success) {
-                        Toast.makeText(activity, R.string.weather_fail, Toast.LENGTH_LONG).show();
-                    }
-                    refreshWeatherText();
-                });
+                refreshWeatherText();
+                if (onComplete != null) {
+                    onComplete.run();
+                }
             });
         });
+    }
 
-        binding.buttonSimRain.setOnClickListener(v -> AppDatabase.IO.execute(() -> {
+    public void toggleSimulation(Runnable onComplete) {
+        final Context app = activity.getApplicationContext();
+        AppDatabase.IO.execute(() -> {
             if (simulatedNow) {
                 WeatherRepository.clear(app);
             } else {
                 WeatherRepository.simulate(app);
             }
-            activity.runOnUiThread(this::refreshWeatherText);
-        }));
-
-        binding.buttonAlerts.setOnClickListener(v -> {
-            PriceAlertScheduler.runNow(app);
-            Toast.makeText(activity, R.string.alerts_started, Toast.LENGTH_LONG).show();
+            activity.runOnUiThread(() -> {
+                refreshWeatherText();
+                if (onComplete != null) {
+                    onComplete.run();
+                }
+            });
         });
     }
 
-    /** Reads the cache and updates the weather line and the simulate button label. */
+    public void triggerAlertsNow() {
+        final Context app = activity.getApplicationContext();
+        PriceAlertScheduler.runNow(app);
+        Toast.makeText(activity, R.string.alerts_started, Toast.LENGTH_LONG).show();
+    }
+
+    public boolean isSimulatedNow() {
+        return simulatedNow;
+    }
+
+    public String getLastWeatherText() {
+        return lastWeatherText;
+    }
+
+    /** Reads the cache and updates the weather status. */
     public void refreshWeatherText() {
         final Context app = activity.getApplicationContext();
         AppDatabase.IO.execute(() -> {
@@ -94,9 +128,7 @@ public class HomeExtras {
                     return;
                 }
                 simulatedNow = simFinal;
-                binding.textWeather.setText(text);
-                binding.buttonSimRain.setText(
-                        simFinal ? R.string.button_sim_off : R.string.button_sim_on);
+                lastWeatherText = text;
             });
         });
     }

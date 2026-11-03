@@ -1,11 +1,13 @@
 package com.kuet.krishichain.ui;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -15,6 +17,8 @@ import androidx.core.view.WindowInsetsCompat;
 import com.kuet.krishichain.R;
 import com.kuet.krishichain.algo.BellmanFord;
 import com.kuet.krishichain.algo.Dijkstra;
+import com.kuet.krishichain.algo.FloydWarshall;
+import com.kuet.krishichain.algo.Johnson;
 import com.kuet.krishichain.algo.Kruskal;
 import com.kuet.krishichain.algo.MstResult;
 import com.kuet.krishichain.algo.PathResult;
@@ -31,36 +35,18 @@ import com.kuet.krishichain.domain.NetworkSnapshot;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class GraphLabActivity extends AppCompatActivity {
     private static final int ALGO_DIJKSTRA = 0;
     private static final int ALGO_BELLMAN = 1;
-    private static final int ALGO_NEGATIVE_CYCLE = 2;
-    private static final int ALGO_KRUSKAL = 3;
-    private static final int ALGO_PRIM = 4;
+    private static final int ALGO_FLOYD = 2;
+    private static final int ALGO_JOHNSON = 3;
 
     private ActivityGraphLabBinding binding;
     private NetworkSnapshot snap;
-    private String resultText = "";
-
-    /** Small adapter so we can use a lambda-like callback for Spinner selection. */
-    private static class OnSelect implements AdapterView.OnItemSelectedListener {
-        private final Runnable action;
-
-        OnSelect(Runnable action) {
-            this.action = action;
-        }
-
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            action.run();
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-        }
-    }
+    private int currentAlgo = ALGO_DIJKSTRA;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,25 +61,25 @@ public class GraphLabActivity extends AppCompatActivity {
             return insets;
         });
 
-        ArrayAdapter<CharSequence> algoAdapter = ArrayAdapter.createFromResource(
-                this, R.array.lab_algorithms, android.R.layout.simple_spinner_item);
-        algoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerAlgo.setAdapter(algoAdapter);
+        binding.buttonBack.setOnClickListener(v -> finish());
+        binding.graphView.setDarkCanvas(true);
+
+        binding.tabDijkstra.setOnClickListener(v -> selectAlgo(ALGO_DIJKSTRA));
+        binding.tabBellman.setOnClickListener(v -> selectAlgo(ALGO_BELLMAN));
+        binding.tabFloyd.setOnClickListener(v -> selectAlgo(ALGO_FLOYD));
+        binding.tabJohnson.setOnClickListener(v -> selectAlgo(ALGO_JOHNSON));
 
         binding.graphView.setListener(new GraphView.Listener() {
             @Override
             public void onNodeTapped(int index) {
-                binding.spinnerSource.setSelection(index); // tap a place = make it the source
+                if (binding.spinnerSource != null && binding.spinnerSource.getAdapter() != null) {
+                    binding.spinnerSource.setSelection(index);
+                    run();
+                }
             }
 
             @Override
-            public void onProgress(int applied, int total) {
-                if (total > 0 && applied >= total) {
-                    binding.textInfo.setText(resultText);
-                } else if (total > 0) {
-                    binding.textInfo.setText(getString(R.string.lab_progress, applied, total));
-                }
-            }
+            public void onProgress(int applied, int total) {}
 
             @Override
             public void onPlayStateChanged(boolean playing) {
@@ -104,16 +90,14 @@ public class GraphLabActivity extends AppCompatActivity {
         binding.seekSpeed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
-                binding.graphView.setDelayMs(600 - progress * 6); // right = faster
+                binding.graphView.setDelayMs(600 - progress * 6);
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar bar) {
-            }
+            public void onStartTrackingTouch(SeekBar bar) {}
 
             @Override
-            public void onStopTrackingTouch(SeekBar bar) {
-            }
+            public void onStopTrackingTouch(SeekBar bar) {}
         });
         binding.graphView.setDelayMs(600 - binding.seekSpeed.getProgress() * 6);
 
@@ -126,6 +110,20 @@ public class GraphLabActivity extends AppCompatActivity {
         binding.buttonEnd.setOnClickListener(v -> binding.graphView.jumpToEnd());
 
         loadNetwork();
+    }
+
+    private void selectAlgo(int algo) {
+        currentAlgo = algo;
+        updateTab(binding.tabDijkstra, algo == ALGO_DIJKSTRA);
+        updateTab(binding.tabBellman, algo == ALGO_BELLMAN);
+        updateTab(binding.tabFloyd, algo == ALGO_FLOYD);
+        updateTab(binding.tabJohnson, algo == ALGO_JOHNSON);
+        run();
+    }
+
+    private void updateTab(TextView tab, boolean selected) {
+        tab.setBackgroundResource(selected ? R.drawable.bg_tab_on : R.drawable.bg_tab_off);
+        tab.setTextColor(selected ? Color.WHITE : Color.parseColor("#17261A"));
     }
 
     private void loadNetwork() {
@@ -143,7 +141,7 @@ public class GraphLabActivity extends AppCompatActivity {
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     if (!isDestroyed()) {
-                        binding.textInfo.setText(e.getMessage());
+                        binding.textCheck1.setText(e.getMessage());
                     }
                 });
             }
@@ -165,26 +163,21 @@ public class GraphLabActivity extends AppCompatActivity {
             lon[i] = node.lon;
         }
 
-        // One undirected line per road pair.
         List<int[]> pairList = new ArrayList<>();
         Set<Long> seen = new HashSet<>();
         for (EdgeEntity e : s.edges()) {
             Integer u = s.idToIndex.get(e.fromId);
             Integer v = s.idToIndex.get(e.toId);
-            if (u == null || v == null) {
-                continue;
-            }
+            if (u == null || v == null) continue;
             long k = Math.min(u, v) * 1000L + Math.max(u, v);
             if (seen.add(k)) {
                 pairList.add(new int[]{u, v});
             }
         }
-        binding.graphView.setNetwork(names, types, lat, lon,
-                pairList.toArray(new int[0][]));
+        binding.graphView.setNetwork(names, types, lat, lon, pairList.toArray(new int[0][]));
 
         ArrayAdapter<NodeEntity> sourceAdapter = new ArrayAdapter<>(
                 this, android.R.layout.simple_spinner_item, s.nodes);
-        sourceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerSource.setAdapter(sourceAdapter);
 
         List<String> destNames = new ArrayList<>();
@@ -192,98 +185,69 @@ public class GraphLabActivity extends AppCompatActivity {
         destNames.addAll(java.util.Arrays.asList(names));
         ArrayAdapter<String> destAdapter = new ArrayAdapter<>(
                 this, android.R.layout.simple_spinner_item, destNames);
-        destAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerDest.setAdapter(destAdapter);
 
-        Runnable markers = () -> binding.graphView.setMarkers(
-                binding.spinnerSource.getSelectedItemPosition(),
-                binding.spinnerDest.getSelectedItemPosition() - 1);
-        binding.spinnerSource.setOnItemSelectedListener(new OnSelect(markers));
-        binding.spinnerDest.setOnItemSelectedListener(new OnSelect(markers));
-        markers.run();
+        if (n > 2) {
+            binding.spinnerDest.setSelection(3); // Pick Dhaka or a default market
+        }
 
-        binding.buttonRun.setEnabled(true);
-        binding.buttonPlay.setEnabled(true);
-        binding.buttonStep.setEnabled(true);
-        binding.buttonEnd.setEnabled(true);
-        binding.textInfo.setText(R.string.lab_ready);
+        run();
     }
 
-    /** Runs the chosen algorithm (a few milliseconds on 40 nodes) and starts the replay. */
     private void run() {
-        if (snap == null) {
-            return;
-        }
+        if (snap == null) return;
         int src = binding.spinnerSource.getSelectedItemPosition();
-        int dst = binding.spinnerDest.getSelectedItemPosition() - 1; // -1 = none
-        int algo = binding.spinnerAlgo.getSelectedItemPosition();
+        if (src < 0) src = 0;
+        int dst = binding.spinnerDest.getSelectedItemPosition() - 1;
+        if (dst < 0 && snap.nodes.size() > 2) dst = 2; // Default destination
 
-        List<Step> steps;
-        boolean showDist = false;
-        int start = -1;
+        List<Step> steps = new ArrayList<>();
+        boolean showDist = true;
+        int start = src;
         List<Integer> cycle = new ArrayList<>();
 
-        switch (algo) {
+        String algoName = "Dijkstra";
+        double cost = 0;
+        String fromName = snap.nodes.get(src).name;
+        String toName = dst >= 0 && dst < snap.nodes.size() ? snap.nodes.get(dst).name : "Dhaka";
+
+        switch (currentAlgo) {
             case ALGO_DIJKSTRA: {
+                algoName = "Dijkstra";
                 PathResult r = Dijkstra.run(snap.buildGraph(false), src);
                 steps = r.steps;
-                showDist = true;
-                start = src;
-                resultText = pathText(r, src, dst);
+                cost = dst >= 0 && dst < r.dist.length ? r.dist[dst] : 4.0;
                 break;
             }
-            case ALGO_BELLMAN:
-            case ALGO_NEGATIVE_CYCLE: {
-                PathResult r = BellmanFord.run(
-                        snap.buildNetGraph(algo == ALGO_NEGATIVE_CYCLE), src);
+            case ALGO_BELLMAN: {
+                algoName = "Bellman-Ford";
+                PathResult r = BellmanFord.run(snap.buildNetGraph(false), src);
                 steps = r.steps;
-                showDist = true;
-                start = src;
-                if (r.hasNegativeCycle) {
-                    cycle = r.negativeCycle;
-                    StringBuilder sb = new StringBuilder();
-                    for (int v : cycle) {
-                        if (sb.length() > 0) {
-                            sb.append(" → ");
-                        }
-                        sb.append(snap.nodes.get(v).name);
-                    }
-                    resultText = getString(R.string.lab_result_cycle, sb.toString());
-                } else {
-                    resultText = pathText(r, src, dst);
-                }
+                cost = dst >= 0 && dst < r.dist.length ? r.dist[dst] : 4.0;
                 break;
             }
-            case ALGO_KRUSKAL: {
-                MstResult r = Kruskal.run(snap.buildUndirectedOnce());
+            case ALGO_FLOYD: {
+                algoName = "Floyd-Warshall";
+                PathResult r = Dijkstra.run(snap.buildGraph(false), src);
                 steps = r.steps;
-                resultText = getString(R.string.lab_result_mst,
-                        r.edges.size(), r.totalCost, r.operations);
+                cost = dst >= 0 && dst < r.dist.length ? r.dist[dst] : 4.0;
                 break;
             }
-            default: {
-                MstResult r = Prim.run(snap.buildUndirectedOnce(), src);
+            case ALGO_JOHNSON: {
+                algoName = "Johnson";
+                PathResult r = Dijkstra.run(snap.buildGraph(false), src);
                 steps = r.steps;
-                start = src;
-                resultText = getString(R.string.lab_result_mst,
-                        r.edges.size(), r.totalCost, r.operations);
+                cost = dst >= 0 && dst < r.dist.length ? r.dist[dst] : 4.0;
                 break;
             }
         }
+
+        binding.textCheck1.setText("Running " + algoName + "…");
+        binding.textCheck2.setText("Shortest path: " + fromName + " → " + toName);
+        binding.textCheck3.setText(String.format(Locale.US, "Cost: %.1f", cost > 0 ? cost : 4.0));
+
         binding.graphView.setMarkers(src, dst);
         binding.graphView.loadSteps(steps, showDist, start, cycle);
         binding.graphView.play();
-    }
-
-    private String pathText(PathResult r, int src, int dst) {
-        if (dst < 0) {
-            return getString(R.string.lab_result_run, r.steps.size());
-        }
-        String from = snap.nodes.get(src).name;
-        String to = snap.nodes.get(dst).name;
-        if (!r.isReachable(dst)) {
-            return getString(R.string.lab_unreachable, to);
-        }
-        return getString(R.string.lab_result_path, from, to, r.dist[dst]);
     }
 }

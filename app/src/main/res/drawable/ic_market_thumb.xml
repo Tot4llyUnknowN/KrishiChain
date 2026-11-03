@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="170dp"
+    android:height="70dp"
+    android:viewportWidth="170"
+    android:viewportHeight="70">
+    <path
+        android:fillColor="#EAF2E8"
+        android:pathData="M0,0h170v70h-170z" />
+    <path
+        android:fillColor="#C6E2C9"
+        android:pathData="M0,45 Q40,30 85,42 T170,38 L170,70 L0,70 Z" />
+    <!-- Market stall / building facade -->
+    <path
+        android:fillColor="#5D8A68"
+        android:pathData="M20,40 L35,28 L75,28 L90,40 Z" />
+    <path
+        android:fillColor="#D8D0C5"
+        android:pathData="M25,40 L85,40 L85,65 L25,65 Z" />
+    <path
+        android:fillColor="#4E6E56"
+        android:pathData="M95,35 L120,22 L145,35 Z" />
+    <path
+        android:fillColor="#C8BCAB"
+        android:pathData="M100,35 L140,35 L140,65 L100,65 Z" />
+    <!-- Windows & doors -->
+    <path
+        android:fillColor="#37474F"
+        android:pathData="M35,46h10v8h-10z M60,46h10v8h-10z M115,44h10v12h-10z" />
+</vector>

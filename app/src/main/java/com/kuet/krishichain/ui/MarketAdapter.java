@@ -15,8 +15,9 @@ import com.kuet.krishichain.domain.RankedMarket;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-/** Shows ranked markets. One ViewHolder per visible row; rows are recycled while scrolling. */
+/** Shows ranked markets matching HTML mockup Screen 3. */
 public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.VH> {
 
     public interface Listener {
@@ -25,10 +26,17 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.VH> {
 
     private final List<RankedMarket> items = new ArrayList<>();
     private int nearestNodeId = -1;
+    private double qtyKg = 1000.0;
     private Listener listener;
 
     public void setListener(Listener listener) {
         this.listener = listener;
+    }
+
+    public void setQuantity(double qty) {
+        if (qty > 0) {
+            this.qtyKg = qty;
+        }
     }
 
     public void setItems(List<RankedMarket> newItems, int nearestNodeId) {
@@ -52,14 +60,23 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.VH> {
         Context c = holder.binding.getRoot().getContext();
         ItemMarketBinding b = holder.binding;
 
-        b.textRank.setText("#" + (position + 1));
+        // Rank badge: #1 is Amber circle, others are pri2 circle
+        if (position == 0) {
+            b.textRank.setBackgroundResource(R.drawable.bg_badge_rank_1);
+            b.textRank.setTextColor(Color.WHITE);
+        } else {
+            b.textRank.setBackgroundResource(R.drawable.bg_badge_rank_n);
+            b.textRank.setTextColor(Color.parseColor("#1B7A2F"));
+        }
+        b.textRank.setText(String.valueOf(position + 1));
+
         b.textName.setText(m.option.marketName);
-        b.textPrice.setText(c.getString(R.string.item_price, m.option.pricePerKg));
         b.textRoute.setText(c.getString(R.string.item_route, m.km, formatDuration(c, m.minutes)));
-        b.textCosts.setText(c.getString(R.string.item_costs,
-                m.option.transportCost, m.option.toll, m.option.spoilageFraction * 100.0));
-        b.textProfit.setText(c.getString(R.string.item_profit, m.option.netProfit));
-        b.textProfit.setTextColor(Color.parseColor(m.option.netProfit >= 0 ? "#2E7D32" : "#C62828"));
+
+        // Profit formatted cleanly matching mockup ৳42.50
+        double perKg = qtyKg > 0 ? (m.option.netProfit / qtyKg) : m.option.netProfit;
+        b.textProfit.setText(String.format(Locale.US, "৳%.2f", perKg));
+        b.textProfit.setTextColor(Color.parseColor(m.option.netProfit >= 0 ? "#1B7A2F" : "#D32F2F"));
 
         boolean isBest = position == 0;
         boolean isNearest = m.option.nodeId == nearestNodeId;
@@ -67,6 +84,7 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.VH> {
             int text = isBest && isNearest ? R.string.tag_best_nearest
                     : isBest ? R.string.tag_best : R.string.tag_nearest;
             b.textTag.setText(text);
+            b.textTag.setBackgroundResource(isBest ? R.drawable.bg_tag_best : R.drawable.bg_tag_nearest);
             b.textTag.setVisibility(View.VISIBLE);
         } else {
             b.textTag.setVisibility(View.GONE);

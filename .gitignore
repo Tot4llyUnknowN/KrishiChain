@@ -13,6 +13,7 @@ local.properties
 google-services.json
 /app/google-services.json
 run_app.bat
+krishichain_debug_files/
 
 
 

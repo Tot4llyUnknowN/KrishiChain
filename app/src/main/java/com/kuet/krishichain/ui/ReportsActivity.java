@@ -1,12 +1,16 @@
 package com.kuet.krishichain.ui;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -21,7 +25,7 @@ import com.kuet.krishichain.data.FirebaseRepository;
 import com.kuet.krishichain.data.NetworkLoader;
 import com.kuet.krishichain.data.NodeEntity;
 import com.kuet.krishichain.databinding.ActivityReportsBinding;
-import com.kuet.krishichain.databinding.DialogAuthBinding;
+import com.kuet.krishichain.databinding.DialogReportPriceBinding;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +41,7 @@ public class ReportsActivity extends AppCompatActivity {
     private final Map<Integer, String> nodeNames = new HashMap<>();
     private final List<NodeEntity> hubNodes = new ArrayList<>();
     private ListenerRegistration firestoreListener;
+    private boolean isAlertsTabSelected = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,108 +49,22 @@ public class ReportsActivity extends AppCompatActivity {
         binding = ActivityReportsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.toolbar.setNavigationOnClickListener(v -> finish());
+        BottomNavHelper.setup(this, BottomNavHelper.Tab.PRICES, binding.getRoot());
+
+        binding.buttonBack.setOnClickListener(v -> finish());
 
         adapter = new PriceReportAdapter(nodeNames);
         binding.recyclerReports.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerReports.setAdapter(adapter);
 
-        setupSpinners();
-        setupListeners();
-        subscribeToReports();
-    }
+        binding.tabLatestPrices.setOnClickListener(v -> setTab(false));
+        binding.tabPriceAlerts.setOnClickListener(v -> setTab(true));
 
-    private void setupSpinners() {
-        ArrayAdapter<CharSequence> cropAdapter = ArrayAdapter.createFromResource(this,
-                R.array.crop_names, android.R.layout.simple_spinner_item);
-        cropAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerCrop.setAdapter(cropAdapter);
-
-        AppDatabase.IO.execute(() -> {
-            try {
-                NetworkLoader.loadIfNeeded(getApplicationContext());
-            } catch (Exception ignored) {}
-            List<NodeEntity> all = AppDatabase.get(this).networkDao().getAllNodes();
-            hubNodes.clear();
-            nodeNames.clear();
-            List<String> displayNames = new ArrayList<>();
-            for (NodeEntity n : all) {
-                nodeNames.put(n.id, n.name);
-                if ("hub".equalsIgnoreCase(n.type) || "market".equalsIgnoreCase(n.type)) {
-                    hubNodes.add(n);
-                    displayNames.add(n.name + " (" + n.type + ")");
-                }
-            }
-
-            runOnUiThread(() -> {
-                ArrayAdapter<String> hubAdapter = new ArrayAdapter<>(this,
-                        android.R.layout.simple_spinner_item, displayNames);
-                hubAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                binding.spinnerMarket.setAdapter(hubAdapter);
-                adapter.notifyDataSetChanged();
-            });
-        });
-    }
-
-    private void setupListeners() {
-        updateAuthUi();
-        binding.buttonManageAuth.setOnClickListener(v -> showAuthDialog());
-
-        binding.buttonSubmit.setOnClickListener(v -> {
-            String priceStr = binding.editPrice.getText().toString().trim();
-            if (TextUtils.isEmpty(priceStr)) {
-                binding.editPrice.setError("Enter a valid price");
-                return;
-            }
-            double price;
-            try {
-                price = Double.parseDouble(priceStr);
-                if (price <= 0) throw new NumberFormatException();
-            } catch (Exception e) {
-                binding.editPrice.setError("Enter a price greater than 0");
-                return;
-            }
-
-            int hubIndex = binding.spinnerMarket.getSelectedItemPosition();
-            if (hubIndex < 0 || hubIndex >= hubNodes.size()) {
-                Toast.makeText(this, "Select a valid market", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            int nodeId = hubNodes.get(hubIndex).id;
-            String crop = binding.spinnerCrop.getSelectedItem().toString().toLowerCase(Locale.ROOT);
-
-            binding.buttonSubmit.setEnabled(false);
-            FirebaseRepository.submitPriceReport(crop, price, nodeId, new FirebaseRepository.CompleteCallback() {
-                @Override
-                public void onSuccess(String message) {
-                    binding.buttonSubmit.setEnabled(true);
-                    binding.editPrice.setText("");
-                    Toast.makeText(ReportsActivity.this, message, Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onError(String error) {
-                    binding.buttonSubmit.setEnabled(true);
-                    // Local fallback so submission is visible immediately even if Firestore rules are locked
-                    FirebaseUser current = FirebaseRepository.getCurrentUser();
-                    String reporter = (current != null && !current.isAnonymous() && current.getEmail() != null)
-                            ? current.getEmail()
-                            : (current != null ? current.getUid() : "local_user");
-                    PriceReport localReport = new PriceReport(crop, price, System.currentTimeMillis(), nodeId, reporter);
-                    currentReports.add(0, localReport);
-                    adapter.setReports(currentReports);
-                    binding.editPrice.setText("");
-                    binding.textReportCount.setText(String.format(Locale.US, "%d reports (added local draft)", currentReports.size()));
-                    Toast.makeText(ReportsActivity.this, "Added locally! (Firestore: " + error + ")", Toast.LENGTH_LONG).show();
-                }
-            });
-        });
-
-        binding.buttonSort.setOnClickListener(v -> {
+        binding.buttonMergeSort.setOnClickListener(v -> {
             if (currentReports.isEmpty()) return;
             Sorts.mergeSort(currentReports, Sorts.byCropPriceDate());
             adapter.setReports(currentReports);
-            Toast.makeText(this, "Sorted using MergeSort (stable: Crop → Price → Date)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Sorted using Merge Sort", Toast.LENGTH_SHORT).show();
         });
 
         binding.buttonFilterOutliers.setOnClickListener(v -> {
@@ -153,29 +72,124 @@ public class ReportsActivity extends AppCompatActivity {
             OutlierFilter filter = new OutlierFilter(0.40);
             OutlierFilter.FilterResult result = filter.filter(currentReports);
             adapter.notifyDataSetChanged();
-            String summary = String.format(Locale.US, "Filter applied: %d valid, %d outliers rejected (>40%% from median)",
-                    result.validReports.size(), result.rejectedReports.size());
-            binding.textReportCount.setText(summary);
-            Toast.makeText(this, summary, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Filtered: " + result.rejectedReports.size() + " outliers marked", Toast.LENGTH_SHORT).show();
         });
 
-        binding.buttonSyncToDb.setOnClickListener(v -> {
-            binding.buttonSyncToDb.setEnabled(false);
-            AppDatabase.IO.execute(() -> {
-                try {
-                    int count = FirebaseRepository.syncCrowdReports(getApplicationContext(), currentReports);
-                    runOnUiThread(() -> {
-                        binding.buttonSyncToDb.setEnabled(true);
-                        Toast.makeText(this, "Synced " + count + " verified crowd prices to local Room database!", Toast.LENGTH_SHORT).show();
-                    });
-                } catch (Exception e) {
-                    runOnUiThread(() -> {
-                        binding.buttonSyncToDb.setEnabled(true);
-                        Toast.makeText(this, "Sync failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
+        binding.buttonSubmitPrice.setOnClickListener(v -> showReportPriceDialog());
+
+        loadHubs();
+        subscribeToReports();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        BottomNavHelper.setup(this, BottomNavHelper.Tab.PRICES, binding.getRoot());
+    }
+
+    private void setTab(boolean alertsTab) {
+        isAlertsTabSelected = alertsTab;
+        if (alertsTab) {
+            binding.tabPriceAlerts.setBackgroundResource(R.drawable.bg_tab_on);
+            binding.tabPriceAlerts.setTextColor(Color.WHITE);
+            binding.tabLatestPrices.setBackgroundResource(R.drawable.bg_tab_off);
+            binding.tabLatestPrices.setTextColor(Color.parseColor("#17261A"));
+            binding.cardPriceAlert.setVisibility(View.VISIBLE);
+        } else {
+            binding.tabLatestPrices.setBackgroundResource(R.drawable.bg_tab_on);
+            binding.tabLatestPrices.setTextColor(Color.WHITE);
+            binding.tabPriceAlerts.setBackgroundResource(R.drawable.bg_tab_off);
+            binding.tabPriceAlerts.setTextColor(Color.parseColor("#17261A"));
+        }
+    }
+
+    private void loadHubs() {
+        AppDatabase.IO.execute(() -> {
+            try {
+                NetworkLoader.loadIfNeeded(getApplicationContext());
+            } catch (Exception ignored) {}
+            List<NodeEntity> all = AppDatabase.get(this).networkDao().getAllNodes();
+            hubNodes.clear();
+            nodeNames.clear();
+            for (NodeEntity n : all) {
+                nodeNames.put(n.id, n.name);
+                if ("hub".equalsIgnoreCase(n.type) || "market".equalsIgnoreCase(n.type)) {
+                    hubNodes.add(n);
+                }
+            }
+            runOnUiThread(() -> adapter.notifyDataSetChanged());
+        });
+    }
+
+    private void showReportPriceDialog() {
+        DialogReportPriceBinding db = DialogReportPriceBinding.inflate(LayoutInflater.from(this));
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(db.getRoot())
+                .setCancelable(true)
+                .create();
+
+        ArrayAdapter<CharSequence> cropAdapter = ArrayAdapter.createFromResource(this,
+                R.array.crop_names, android.R.layout.simple_spinner_item);
+        cropAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        db.dialogSpinnerCrop.setAdapter(cropAdapter);
+
+        List<String> hubNames = new ArrayList<>();
+        for (NodeEntity h : hubNodes) {
+            hubNames.add(h.name);
+        }
+        ArrayAdapter<String> hubAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, hubNames);
+        hubAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        db.dialogSpinnerHub.setAdapter(hubAdapter);
+
+        db.dialogButtonSubmit.setOnClickListener(v -> {
+            String priceStr = db.dialogEditPrice.getText().toString().trim();
+            if (TextUtils.isEmpty(priceStr)) {
+                db.dialogEditPrice.setError("Enter price");
+                return;
+            }
+            double price;
+            try {
+                price = Double.parseDouble(priceStr);
+                if (price <= 0) throw new NumberFormatException();
+            } catch (Exception e) {
+                db.dialogEditPrice.setError("Invalid price");
+                return;
+            }
+
+            int hubIdx = db.dialogSpinnerHub.getSelectedItemPosition();
+            if (hubIdx < 0 || hubIdx >= hubNodes.size()) return;
+            int nodeId = hubNodes.get(hubIdx).id;
+            String crop = db.dialogSpinnerCrop.getSelectedItem().toString().toLowerCase(Locale.ROOT);
+            if (crop.contains("potato")) crop = "potato";
+            else if (crop.contains("onion")) crop = "onion";
+            else if (crop.contains("tomato")) crop = "tomato";
+
+            final String cropFinal = crop;
+            final double priceFinal = price;
+            db.dialogButtonSubmit.setEnabled(false);
+            FirebaseRepository.submitPriceReport(cropFinal, priceFinal, nodeId, new FirebaseRepository.CompleteCallback() {
+                @Override
+                public void onSuccess(String message) {
+                    Toast.makeText(ReportsActivity.this, "Price report submitted!", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                }
+
+                @Override
+                public void onError(String error) {
+                    FirebaseUser current = FirebaseRepository.getCurrentUser();
+                    String reporter = current != null ? (current.getEmail() != null ? current.getEmail() : current.getUid()) : "local_user";
+                    PriceReport local = new PriceReport(cropFinal, priceFinal, System.currentTimeMillis(), nodeId, reporter);
+                    currentReports.add(0, local);
+                    adapter.setReports(currentReports);
+                    Toast.makeText(ReportsActivity.this, "Report saved locally!", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
                 }
             });
         });
+
+        db.dialogButtonCancel.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
     }
 
     private void subscribeToReports() {
@@ -185,11 +199,11 @@ public class ReportsActivity extends AppCompatActivity {
                 currentReports.clear();
                 if (reports != null && !reports.isEmpty()) {
                     currentReports.addAll(reports);
-                    binding.textReportCount.setText(String.format(Locale.US, "%d live reports from Firestore", reports.size()));
                 } else {
                     currentReports.addAll(FirebaseRepository.getDemoReports());
-                    binding.textReportCount.setText(String.format(Locale.US, "%d demo crowd reports loaded (includes outliers)", currentReports.size()));
                 }
+                // Mark initial outliers
+                new OutlierFilter(0.40).filter(currentReports);
                 adapter.setReports(currentReports);
             }
 
@@ -197,132 +211,11 @@ public class ReportsActivity extends AppCompatActivity {
             public void onError(Exception e) {
                 if (currentReports.isEmpty()) {
                     currentReports.addAll(FirebaseRepository.getDemoReports());
+                    new OutlierFilter(0.40).filter(currentReports);
                     adapter.setReports(currentReports);
                 }
-                binding.textReportCount.setText(String.format(Locale.US,
-                        "Firestore: %s\nLoaded %d demo crowd reports (with outliers for demo)",
-                        e.getMessage(), currentReports.size()));
             }
         });
-    }
-
-    private void updateAuthUi() {
-        FirebaseUser user = FirebaseRepository.getCurrentUser();
-        if (user != null && !user.isAnonymous() && user.getEmail() != null) {
-            binding.textAuthUser.setText("👤 " + user.getEmail());
-            binding.buttonManageAuth.setText("Account");
-        } else if (user != null && user.isAnonymous()) {
-            String uid = user.getUid();
-            binding.textAuthUser.setText("👤 Guest (" + uid.substring(0, Math.min(6, uid.length())) + "...)");
-            binding.buttonManageAuth.setText("Sign In");
-        } else {
-            binding.textAuthUser.setText("👤 Guest Mode");
-            binding.buttonManageAuth.setText("Sign In");
-        }
-    }
-
-    private void showAuthDialog() {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-        DialogAuthBinding dBinding = DialogAuthBinding.inflate(getLayoutInflater());
-        builder.setView(dBinding.getRoot());
-        android.app.AlertDialog dialog = builder.create();
-
-        FirebaseUser current = FirebaseRepository.getCurrentUser();
-        if (current != null && !current.isAnonymous() && current.getEmail() != null) {
-            dBinding.textCurrentStatus.setText("Currently signed in as: " + current.getEmail());
-            dBinding.editAuthEmail.setText(current.getEmail());
-            dBinding.buttonSignOut.setVisibility(View.VISIBLE);
-        } else if (current != null && current.isAnonymous()) {
-            String uid = current.getUid();
-            dBinding.textCurrentStatus.setText("Currently signed in as: Guest (" + uid.substring(0, Math.min(6, uid.length())) + "...)");
-            dBinding.buttonSignOut.setVisibility(View.VISIBLE);
-        } else {
-            dBinding.textCurrentStatus.setText("Currently: Not signed in");
-            dBinding.buttonSignOut.setVisibility(View.GONE);
-        }
-
-        dBinding.buttonSignIn.setOnClickListener(v -> {
-            String email = dBinding.editAuthEmail.getText() != null ? dBinding.editAuthEmail.getText().toString().trim() : "";
-            String password = dBinding.editAuthPassword.getText() != null ? dBinding.editAuthPassword.getText().toString().trim() : "";
-            if (TextUtils.isEmpty(email) || !email.contains("@")) {
-                dBinding.editAuthEmail.setError("Enter a valid email");
-                return;
-            }
-            if (TextUtils.isEmpty(password) || password.length() < 6) {
-                dBinding.editAuthPassword.setError("Password must be at least 6 characters");
-                return;
-            }
-            dBinding.buttonSignIn.setEnabled(false);
-            FirebaseRepository.signInWithEmail(email, password, new FirebaseRepository.CompleteCallback() {
-                @Override
-                public void onSuccess(String message) {
-                    dialog.dismiss();
-                    updateAuthUi();
-                    Toast.makeText(ReportsActivity.this, message, Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onError(String error) {
-                    dBinding.buttonSignIn.setEnabled(true);
-                    Toast.makeText(ReportsActivity.this, error, Toast.LENGTH_LONG).show();
-                }
-            });
-        });
-
-        dBinding.buttonRegister.setOnClickListener(v -> {
-            String email = dBinding.editAuthEmail.getText() != null ? dBinding.editAuthEmail.getText().toString().trim() : "";
-            String password = dBinding.editAuthPassword.getText() != null ? dBinding.editAuthPassword.getText().toString().trim() : "";
-            if (TextUtils.isEmpty(email) || !email.contains("@")) {
-                dBinding.editAuthEmail.setError("Enter a valid email");
-                return;
-            }
-            if (TextUtils.isEmpty(password) || password.length() < 6) {
-                dBinding.editAuthPassword.setError("Password must be at least 6 characters");
-                return;
-            }
-            dBinding.buttonRegister.setEnabled(false);
-            FirebaseRepository.signUpWithEmail(email, password, new FirebaseRepository.CompleteCallback() {
-                @Override
-                public void onSuccess(String message) {
-                    dialog.dismiss();
-                    updateAuthUi();
-                    Toast.makeText(ReportsActivity.this, message, Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onError(String error) {
-                    dBinding.buttonRegister.setEnabled(true);
-                    Toast.makeText(ReportsActivity.this, error, Toast.LENGTH_LONG).show();
-                }
-            });
-        });
-
-        dBinding.buttonGuest.setOnClickListener(v -> {
-            dBinding.buttonGuest.setEnabled(false);
-            FirebaseRepository.signInAsGuest(new FirebaseRepository.CompleteCallback() {
-                @Override
-                public void onSuccess(String message) {
-                    dialog.dismiss();
-                    updateAuthUi();
-                    Toast.makeText(ReportsActivity.this, message, Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onError(String error) {
-                    dBinding.buttonGuest.setEnabled(true);
-                    Toast.makeText(ReportsActivity.this, error, Toast.LENGTH_SHORT).show();
-                }
-            });
-        });
-
-        dBinding.buttonSignOut.setOnClickListener(v -> {
-            FirebaseRepository.signOut();
-            dialog.dismiss();
-            updateAuthUi();
-            Toast.makeText(ReportsActivity.this, "Signed out", Toast.LENGTH_SHORT).show();
-        });
-
-        dialog.show();
     }
 
     @Override
@@ -330,6 +223,7 @@ public class ReportsActivity extends AppCompatActivity {
         super.onDestroy();
         if (firestoreListener != null) {
             firestoreListener.remove();
+            firestoreListener = null;
         }
     }
 }

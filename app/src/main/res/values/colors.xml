@@ -1,5 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- KrishiChain Fused Final UI Palette -->
+    <color name="bg">#EAF2E4</color>
+    <color name="card">#FFFFFF</color>
+    <color name="ink">#17261A</color>
+    <color name="mut">#667666</color>
+    <color name="pri">#1B7A2F</color>
+    <color name="pri2">#E4F3E6</color>
+    <color name="amb">#F59E0B</color>
+    <color name="amb_text">#201400</color>
+    <color name="pur">#8E24AA</color>
+    <color name="red">#D32F2F</color>
+    <color name="line">#DBE6D8</color>
+    <color name="phone">#0E150E</color>
+
+    <!-- Pastel Feature Tiles -->
+    <color name="tile_1_bg">#FDE9C9</color>
+    <color name="tile_1_text">#6A4300</color>
+    <color name="tile_2_bg">#D6EBFB</color>
+    <color name="tile_2_text">#0B4A7A</color>
+    <color name="tile_3_bg">#DCECFF</color>
+    <color name="tile_3_text">#1E3A8A</color>
+    <color name="tile_4_bg">#E6E0F5</color>
+    <color name="tile_4_text">#432C7A</color>
+
+    <!-- Node colors (Mockup standard) -->
+    <color name="node_village">#7CB342</color>
+    <color name="node_hub">#FFA000</color>
+    <color name="node_market">#8E24AA</color>
+    <color name="ring_done">#1565C0</color>
+    <color name="ring_frontier">#FF6F00</color>
+    <color name="blue_tag">#1565C0</color>
+
+    <!-- Badges & Alerts -->
+    <color name="badge_ok_bg">#E8F5E9</color>
+    <color name="badge_ok_text">#2E7D32</color>
+    <color name="badge_bad_bg">#FFEBEE</color>
+    <color name="badge_bad_text">#C62828</color>
+    <color name="alert_card_bg">#FFEBEE</color>
+    <color name="alert_card_text">#8A1C1C</color>
+
+    <!-- Splash Gradient Colors -->
+    <color name="splash_grad_start">#CFE9F7</color>
+    <color name="splash_grad_mid">#E9F5D8</color>
+    <color name="splash_grad_end">#7CC06A</color>
+    <color name="splash_motto">#1B5E20</color>
+
+    <!-- Dark Theme Counterparts -->
+    <color name="bg_dark">#0B120B</color>
+    <color name="card_dark">#152015</color>
+    <color name="ink_dark">#E6EFE4</color>
+    <color name="mut_dark">#91A291</color>
+    <color name="pri_dark">#3FAE5C</color>
+    <color name="pri2_dark">#1A3722</color>
+    <color name="line_dark">#263626</color>
+    <color name="dark_canvas">#101418</color>
+
+    <!-- Standard Basics -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#00000000</color>
+
+    <!-- Home JPEG Palette -->
+    <color name="home_bg">#F6FAF6</color>
+    <color name="home_header_dark">#133E23</color>
+    <color name="home_subtitle">#5A7A66</color>
+    <color name="home_mint_tile">#EDF6EE</color>
+    <color name="gold_badge">#F59E0B</color>
+    <color name="silver_badge">#94A3B8</color>
+    <color name="bronze_badge">#D97706</color>
 </resources>

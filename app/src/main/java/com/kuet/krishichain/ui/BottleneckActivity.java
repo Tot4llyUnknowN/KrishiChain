@@ -2,6 +2,8 @@ package com.kuet.krishichain.ui;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,15 +24,15 @@ import com.kuet.krishichain.domain.NetworkSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class BottleneckActivity extends AppCompatActivity {
-    /** ASSUMPTION: tons per day each market can absorb. Label it in the report. */
-    private static final double MARKET_DEMAND = 150;
-    private static final double SOURCE_CAP = 1000; // never the bottleneck
+    private static final double SOURCE_CAP = 1000.0;
+    private static final double MARKET_DEMAND = 150.0;
 
     private ActivityBottleneckBinding binding;
     private NetworkSnapshot snap;
-    private final List<Integer> villages = new ArrayList<>(); // node indexes
+    private final List<Integer> villages = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,15 +47,15 @@ public class BottleneckActivity extends AppCompatActivity {
             return insets;
         });
 
-        binding.graphView.setDelayMs(250);
+        binding.buttonBack.setOnClickListener(v -> finish());
+        binding.cardCluster.setOnClickListener(v -> binding.spinnerCluster.performClick());
+
         binding.graphView.setListener(new GraphView.Listener() {
             @Override
-            public void onNodeTapped(int index) {
-            }
+            public void onNodeTapped(int index) {}
 
             @Override
-            public void onProgress(int applied, int total) {
-            }
+            public void onProgress(int applied, int total) {}
 
             @Override
             public void onPlayStateChanged(boolean playing) {
@@ -107,30 +109,33 @@ public class BottleneckActivity extends AppCompatActivity {
                 this, android.R.layout.simple_spinner_item, items);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerCluster.setAdapter(adapter);
+        binding.spinnerCluster.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                binding.textClusterDisplay.setText(items.get(position) + " ▾");
+                run();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
         binding.buttonRun.setEnabled(true);
         binding.buttonPlay.setEnabled(true);
         binding.buttonStep.setEnabled(true);
         binding.buttonEnd.setEnabled(true);
-        binding.textFlowInfo.setText(R.string.bn_ready);
-        binding.textCut.setText(getString(R.string.bn_assume, (int) MARKET_DEMAND));
+        run();
     }
 
     private String nameOf(int vertex) {
         int n = snap.nodes.size();
-        if (vertex == n) {
-            return getString(R.string.bn_farms);
-        }
-        if (vertex == n + 1) {
-            return getString(R.string.bn_demand);
-        }
+        if (vertex == n) return getString(R.string.bn_farms);
+        if (vertex == n + 1) return getString(R.string.bn_demand);
         return snap.nodes.get(vertex).name;
     }
 
     private void run() {
-        if (snap == null) {
-            return;
-        }
+        if (snap == null) return;
         int n = snap.nodes.size();
         int superSource = n;
         int superSink = n + 1;
@@ -143,7 +148,8 @@ public class BottleneckActivity extends AppCompatActivity {
                 flow.addEdge(u, v, e.capacity);
             }
         }
-        int choice = binding.spinnerCluster.getSelectedItemPosition(); // 0 = all villages
+        int choice = binding.spinnerCluster.getSelectedItemPosition();
+        if (choice < 0) choice = 0;
         for (int i = 0; i < villages.size(); i++) {
             if (choice == 0 || choice - 1 == i) {
                 flow.addEdge(superSource, villages.get(i), SOURCE_CAP);
@@ -159,18 +165,19 @@ public class BottleneckActivity extends AppCompatActivity {
 
         List<int[]> cutPairs = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
-        sb.append(getString(R.string.bn_cut_header, r.maxFlow)).append('\n');
         for (FlowEdge e : r.cutEdges) {
-            sb.append(getString(R.string.bn_cut_line, nameOf(e.from), nameOf(e.to), e.capacity))
-                    .append('\n');
+            sb.append(nameOf(e.from)).append(" → ").append(nameOf(e.to))
+                    .append(String.format(Locale.US, " (%.0f/%.0f, full)\n", e.capacity, e.capacity));
             if (e.from < n && e.to < n) {
                 cutPairs.add(new int[]{e.from, e.to});
             }
         }
-        sb.append('\n').append(getString(R.string.bn_hint));
+        if (sb.length() == 0) {
+            sb.append("No bottleneck edges found for this cluster.\n");
+        }
 
-        binding.textFlowInfo.setText(getString(R.string.bn_result, r.maxFlow));
-        binding.textCut.setText(sb.toString());
+        binding.textFlowInfo.setText(String.format(Locale.US, "Max flow: %.0f t/day", r.maxFlow));
+        binding.textCut.setText(sb.toString().trim());
         binding.graphView.loadSteps(r.steps, false, -1, null);
         binding.graphView.setCut(cutPairs);
         binding.graphView.play();

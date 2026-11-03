@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_field"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="@string/report_submit_heading"
+        android:textColor="@color/ink"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="14dp"
+        android:text="@string/report_submit_sub"
+        android:textColor="@color/mut"
+        android:textSize="11sp" />
+
+    <!-- Crop Selector -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="@string/label_crop"
+        android:textColor="@color/mut"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_field">
+
+        <Spinner
+            android:id="@+id/dialogSpinnerCrop"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
+    <!-- Market Hub Selector -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="@string/label_market_hub"
+        android:textColor="@color/mut"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_field">
+
+        <Spinner
+            android:id="@+id/dialogSpinnerHub"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
+    <!-- Price (৳/kg) Input -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="@string/label_price_bdt"
+        android:textColor="@color/mut"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/dialogEditPrice"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_field"
+        android:hint="@string/hint_price"
+        android:importantForAutofill="no"
+        android:inputType="numberDecimal"
+        android:paddingHorizontal="10dp"
+        android:textColor="@color/ink"
+        android:textSize="13sp" />
+
+    <!-- Submit Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/dialogButtonSubmit"
+        style="@style/Widget.KrishiChain.Button.Amber"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:layout_marginBottom="6dp"
+        android:text="@string/button_submit_report"
+        android:textSize="13sp" />
+
+    <!-- Cancel Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/dialogButtonCancel"
+        style="@style/Widget.KrishiChain.Button.OutlinedControl"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:text="Cancel"
+        android:textSize="12sp" />
+
+</LinearLayout>

@@ -1,7 +1,34 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.KrishiChain" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <!-- Enforce pure light mode even when system night mode is active -->
+    <style name="Base.Theme.KrishiChain" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/pri</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/pri2</item>
+        <item name="colorOnPrimaryContainer">@color/pri</item>
+
+        <item name="colorSecondary">@color/amb</item>
+        <item name="colorOnSecondary">@color/amb_text</item>
+
+        <item name="android:colorBackground">@color/home_bg</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorSurfaceVariant">@color/home_mint_tile</item>
+        <item name="colorOnSurfaceVariant">@color/mut</item>
+        <item name="colorOutline">#DEE8DF</item>
+
+        <item name="android:statusBarColor">@color/home_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
+    <style name="Theme.KrishiChain" parent="Base.Theme.KrishiChain" />
+
+    <style name="Widget.KrishiChain.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">14dp</item>
+        <item name="cardElevation">1dp</item>
+        <item name="strokeColor">#DEE8DF</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardBackgroundColor">@color/white</item>
     </style>
 </resources>

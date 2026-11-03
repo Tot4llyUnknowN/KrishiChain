@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.kuet.krishichain.R;
 import com.kuet.krishichain.algo.PriceReport;
 import com.kuet.krishichain.databinding.ItemPriceReportBinding;
 
@@ -21,7 +22,7 @@ public class PriceReportAdapter extends RecyclerView.Adapter<PriceReportAdapter.
 
     private final List<PriceReport> reports = new ArrayList<>();
     private final Map<Integer, String> nodeNames;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.US);
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm", Locale.US);
 
     public PriceReportAdapter(Map<Integer, String> nodeNames) {
         this.nodeNames = nodeNames;
@@ -50,36 +51,36 @@ public class PriceReportAdapter extends RecyclerView.Adapter<PriceReportAdapter.
                 ? nodeNames.get(report.nodeId)
                 : ("Hub #" + report.nodeId);
 
-        String cropCapitalized = report.crop != null && !report.crop.isEmpty()
-                ? Character.toUpperCase(report.crop.charAt(0)) + report.crop.substring(1)
-                : "";
-
-        holder.binding.textMarketCrop.setText(marketName + " · " + cropCapitalized);
-        holder.binding.textPrice.setText(String.format(Locale.US, "৳%.1f / kg", report.price));
-
-        if (report.isOutlier) {
-            holder.binding.textStatusBadge.setText("OUTLIER REJECTED");
-            holder.binding.textStatusBadge.setBackgroundColor(Color.parseColor("#FFEBEE"));
-            holder.binding.textStatusBadge.setTextColor(Color.parseColor("#C62828"));
-        } else {
-            holder.binding.textStatusBadge.setText("VALID");
-            holder.binding.textStatusBadge.setBackgroundColor(Color.parseColor("#E8F5E9"));
-            holder.binding.textStatusBadge.setTextColor(Color.parseColor("#2E7D32"));
+        String emoji = "🥔";
+        String cropName = "Potato";
+        if (report.crop != null) {
+            String lower = report.crop.toLowerCase(Locale.US);
+            if (lower.contains("onion")) {
+                emoji = "🧅";
+                cropName = "Onion";
+            } else if (lower.contains("tomato")) {
+                emoji = "🍅";
+                cropName = "Tomato";
+            }
         }
 
-        String reporterDisplay;
-        if (report.reporterId != null && report.reporterId.contains("@")) {
-            reporterDisplay = "By: " + report.reporterId;
-        } else if (report.reporterId != null && report.reporterId.startsWith("usr_")) {
-            reporterDisplay = "By: Guest (" + report.reporterId + ")";
-        } else if (report.reporterId != null && report.reporterId.length() > 6) {
-            reporterDisplay = "By: Guest (" + report.reporterId.substring(0, 6) + "...)";
+        holder.binding.textMarketCrop.setText(emoji + " " + cropName);
+        holder.binding.textPrice.setText(String.format(Locale.US, "৳%.1f/kg", report.price));
+
+        if (report.isOutlier) {
+            holder.binding.textStatusBadge.setText("OUTLIER");
+            holder.binding.textStatusBadge.setBackgroundResource(R.drawable.bg_badge_bad);
+            holder.binding.textStatusBadge.setTextColor(Color.parseColor("#C62828"));
+            holder.binding.textPrice.setTextColor(Color.parseColor("#D32F2F"));
         } else {
-            reporterDisplay = "By: Guest";
+            holder.binding.textStatusBadge.setText("VALID");
+            holder.binding.textStatusBadge.setBackgroundResource(R.drawable.bg_badge_ok);
+            holder.binding.textStatusBadge.setTextColor(Color.parseColor("#2E7D32"));
+            holder.binding.textPrice.setTextColor(Color.parseColor("#17261A"));
         }
 
         String formattedDate = dateFormat.format(new Date(report.dateMillis));
-        holder.binding.textReportMeta.setText(String.format("Reported %s · %s", formattedDate, reporterDisplay));
+        holder.binding.textReportMeta.setText(marketName + " · " + formattedDate);
     }
 
     @Override

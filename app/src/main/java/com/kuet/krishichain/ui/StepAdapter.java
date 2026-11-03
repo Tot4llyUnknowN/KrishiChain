@@ -2,6 +2,7 @@ package com.kuet.krishichain.ui;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -13,14 +14,17 @@ import com.kuet.krishichain.domain.RouteLeg;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-/** One row per road segment of the route. */
+/** Displays visited district waypoints and legs on the optimal shortest path. */
 public class StepAdapter extends RecyclerView.Adapter<StepAdapter.VH> {
     private final List<RouteLeg> items = new ArrayList<>();
 
     public void setItems(List<RouteLeg> legs) {
         items.clear();
-        items.addAll(legs);
+        if (legs != null) {
+            items.addAll(legs);
+        }
         notifyDataSetChanged();
     }
 
@@ -35,11 +39,28 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.VH> {
     public void onBindViewHolder(@NonNull VH holder, int position) {
         RouteLeg leg = items.get(position);
         Context c = holder.binding.getRoot().getContext();
+        boolean isFirst = (position == 0);
+        boolean isLast = (position == items.size() - 1);
+
         holder.binding.textStepNo.setText(String.valueOf(position + 1));
-        holder.binding.textStepTitle.setText(
-                c.getString(R.string.step_title, leg.fromName, leg.toName));
-        holder.binding.textStepDetail.setText(c.getString(R.string.step_detail,
-                leg.km, Fmt.duration(c, leg.minutes), leg.cost + leg.toll));
+        holder.binding.viewTimelineLine.setVisibility(isLast ? View.INVISIBLE : View.VISIBLE);
+
+        holder.binding.textStepTitle.setText(String.format(Locale.US, "%s → %s", leg.fromName, leg.toName));
+
+        if (isLast) {
+            holder.binding.textStepTypeBadge.setText("Destination");
+            holder.binding.textStepTypeBadge.setBackgroundResource(R.drawable.bg_badge_gold);
+        } else if (isFirst) {
+            holder.binding.textStepTypeBadge.setText("Origin Leg");
+            holder.binding.textStepTypeBadge.setBackgroundResource(R.drawable.bg_badge_ok);
+        } else {
+            holder.binding.textStepTypeBadge.setText("Crossed District");
+            holder.binding.textStepTypeBadge.setBackgroundResource(R.drawable.bg_pill_white);
+        }
+
+        String tollText = leg.toll > 0 ? String.format(Locale.US, " · Toll ৳ %,d", Math.round(leg.toll)) : "";
+        holder.binding.textStepDetail.setText(String.format(Locale.US, "%.0f km · ~%s%s · ৳ %,d",
+                leg.km, Fmt.duration(c, leg.minutes), tollText, Math.round(leg.cost + leg.toll)));
     }
 
     @Override

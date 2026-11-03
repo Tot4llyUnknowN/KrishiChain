@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="90dp"
+    android:viewportWidth="120"
+    android:viewportHeight="90">
+    <!-- Sun/Hills backdrop -->
+    <path
+        android:fillColor="#E2F1E5"
+        android:pathData="M0,50 Q30,30 60,45 T120,40 L120,90 L0,90 Z" />
+    <path
+        android:fillColor="#CBE6D0"
+        android:pathData="M0,60 Q40,48 80,58 T120,52 L120,90 L0,90 Z" />
+    <!-- Farmer silhouette with conic hat -->
+    <path
+        android:fillColor="#D8A05A"
+        android:pathData="M80,30 L95,18 L110,30 Z" />
+    <path
+        android:fillColor="#5D4037"
+        android:pathData="M92,30 A3,3 0 0,0 98,30 Z" />
+    <path
+        android:fillColor="#E0E0E0"
+        android:pathData="M84,33 Q95,31 106,33 L110,65 L80,65 Z" />
+    <!-- Tea / Crops basket -->
+    <path
+        android:fillColor="#8D6E63"
+        android:pathData="M98,45 Q115,45 118,65 L98,65 Z" />
+    <path
+        android:fillColor="#2E7D32"
+        android:pathData="M100,43 Q108,35 116,42 Q112,48 100,43 Z" />
+</vector>

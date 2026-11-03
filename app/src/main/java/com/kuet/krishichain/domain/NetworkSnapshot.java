@@ -56,6 +56,8 @@ public final class NetworkSnapshot {
                 double r = ((a == null ? 0 : a) + (b == null ? 0 : b)) / 2.0;
                 double factor = Math.min(MAX_FACTOR, 1 + RAIN_K * r);
                 e.minutes = (int) Math.round(e.minutes * factor); // in memory only, not saved
+                double costFactor = Math.min(1.5, 1.0 + 0.02 * r);
+                e.cost = Math.round(e.cost * costFactor);
             }
             edgeByPair.put(key(e.fromId, e.toId), e);
         }

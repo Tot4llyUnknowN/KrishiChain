@@ -46,8 +46,8 @@ public interface NetworkDao {
     @Query("SELECT COUNT(*) FROM prices WHERE source = 'DUMMY'")
     int dummyPriceCount();
 
-    /** Places a farmer can start from. */
-    @Query("SELECT * FROM nodes WHERE type IN ('village', 'hub') ORDER BY name")
+    /** Places a farmer can start from (any of the 64 districts). */
+    @Query("SELECT * FROM nodes ORDER BY name")
     List<NodeEntity> getOrigins();
 
     @Query("SELECT * FROM nodes ORDER BY id")

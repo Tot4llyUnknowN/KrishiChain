@@ -30,6 +30,7 @@ public final class RouteCalculator {
 
         List<RouteLeg> legs = new ArrayList<>();
         List<String> names = new ArrayList<>();
+        List<NodeEntity> pathNodes = new ArrayList<>();
         double km = 0;
         int minutes = 0;
         double cost = 0;
@@ -37,6 +38,7 @@ public final class RouteCalculator {
         for (int i = 0; i < path.size(); i++) {
             NodeEntity n = snap.nodes.get(path.get(i));
             names.add(n.name);
+            pathNodes.add(n);
             if (i + 1 < path.size()) {
                 NodeEntity next = snap.nodes.get(path.get(i + 1));
                 EdgeEntity e = snap.edge(n.id, next.id);
@@ -52,6 +54,6 @@ public final class RouteCalculator {
         double spoilage = Math.min(1.0, spoilagePctPerHour / 100.0 * (minutes / 60.0));
         MarketOption option = new MarketOption(destId, snap.nodes.get(d).name,
                 pricePerKg, qtyKg, cost, toll, spoilage);
-        return new RouteResult(option, legs, names, km, minutes, byTime);
+        return new RouteResult(option, legs, names, pathNodes, km, minutes, byTime);
     }
 }

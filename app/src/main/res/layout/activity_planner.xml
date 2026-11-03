@@ -1,101 +1,310 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/home_bg"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/planner_title"
-        android:textSize="24sp"
-        android:textStyle="bold" />
-
-    <RadioGroup
-        android:id="@+id/radioAlgo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <RadioButton
-            android:id="@+id/radioKruskal"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:checked="true"
-            android:minHeight="48dp"
-            android:text="@string/planner_kruskal" />
-
-        <RadioButton
-            android:id="@+id/radioPrim"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:minHeight="48dp"
-            android:text="@string/planner_prim" />
-    </RadioGroup>
-
-    <com.kuet.krishichain.ui.GraphView
-        android:id="@+id/graphView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-    <TextView
-        android:id="@+id/textProgress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#1565C0"
-        android:textSize="13sp"
-        android:textStyle="bold" />
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="130dp">
-
-        <TextView
-            android:id="@+id/textCompare"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/lab_loading"
-            android:textSize="13sp" />
-    </ScrollView>
-
+    <!-- Status Bar (.sb) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:background="@color/home_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="5dp">
 
-        <Button
-            android:id="@+id/buttonReplay"
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:enabled="false"
-            android:text="@string/button_run" />
+            android:text="9:41"
+            android:textColor="@color/mut"
+            android:textSize="10sp" />
 
-        <Button
-            android:id="@+id/buttonPlay"
-            android:layout_width="0dp"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:enabled="false"
-            android:text="@string/button_play" />
-
-        <Button
-            android:id="@+id/buttonStep"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:enabled="false"
-            android:text="@string/button_step" />
-
-        <Button
-            android:id="@+id/buttonEnd"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:enabled="false"
-            android:text="@string/button_end" />
+            android:text="@string/net_online"
+            android:textColor="@color/pri"
+            android:textSize="10sp"
+            android:textStyle="bold" />
     </LinearLayout>
+
+    <!-- Header (.hd) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/pri"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp">
+
+        <TextView
+            android:id="@+id/buttonBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingEnd="10dp"
+            android:text="←"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/planner_title"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Body (.bd) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
+            android:text="@string/feeder_network"
+            android:textColor="@color/ink"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <!-- GraphView Container -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.KrishiChain.Card"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="7dp"
+            android:layout_weight="1">
+
+            <com.kuet.krishichain.ui.GraphView
+                android:id="@+id/graphView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Legend Row (.row .mut) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/legendKruskal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="■ Kruskal"
+                android:textColor="@color/blue_tag"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/legendPrim"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:text="■ Prim"
+                android:textColor="@color/amb"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- 2-Column Cards (.g2) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
+            android:orientation="horizontal">
+
+            <!-- Kruskal Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardKruskal"
+                style="@style/Widget.KrishiChain.Card"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingVertical="9dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/planner_kruskal"
+                        android:textColor="@color/mut"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/textKruskalKm"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/ink"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        tools:text="4,210 km" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Prim Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPrim"
+                style="@style/Widget.KrishiChain.Card"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingVertical="9dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/planner_prim"
+                        android:textColor="@color/mut"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/textPrimKm"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/ink"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        tools:text="4,210 km" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- Muted Note -->
+        <TextView
+            android:id="@+id/textNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="9dp"
+            android:text="@string/planner_note"
+            android:textColor="@color/mut"
+            android:textSize="10.5sp" />
+
+        <!-- View Details Button (.bt) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonViewDetails"
+            style="@style/Widget.KrishiChain.Button.Green"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:text="@string/view_details"
+            android:textSize="13sp" />
+
+        <!-- Hidden RadioGroup and Views for backward compatibility -->
+        <RadioGroup
+            android:id="@+id/radioAlgo"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone">
+            <RadioButton android:id="@+id/radioKruskal" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <RadioButton android:id="@+id/radioPrim" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </RadioGroup>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonPlay"
+                style="@style/Widget.KrishiChain.Button.OutlinedControl"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="3dp"
+                android:layout_weight="1"
+                android:padding="0dp"
+                android:text="@string/button_play"
+                android:textSize="10sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonStep"
+                style="@style/Widget.KrishiChain.Button.OutlinedControl"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:layout_marginHorizontal="2dp"
+                android:layout_weight="1"
+                android:padding="0dp"
+                android:text="@string/button_step"
+                android:textSize="10sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonReplay"
+                style="@style/Widget.KrishiChain.Button.OutlinedControl"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="3dp"
+                android:layout_weight="1"
+                android:padding="0dp"
+                android:text="Replay"
+                android:textSize="10sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonEnd"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textProgress"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/textKruskal"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/textPrim"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/textCompare"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
 </LinearLayout>

@@ -3,10 +3,12 @@ package com.kuet.krishichain.ui;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.webkit.WebSettings;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +29,8 @@ import com.kuet.krishichain.domain.NetworkSnapshot;
 import com.kuet.krishichain.domain.RouteCalculator;
 import com.kuet.krishichain.domain.RouteResult;
 
+import java.util.Locale;
+
 public class RouteActivity extends AppCompatActivity {
     public static final String EXTRA_DEST_ID = "dest_id";
     public static final String EXTRA_PRICE = "price_per_kg";
@@ -42,6 +46,7 @@ public class RouteActivity extends AppCompatActivity {
     private String cropName;
     private double qtyKg;
     private String originName;
+    private boolean isFastestMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,12 +57,22 @@ public class RouteActivity extends AppCompatActivity {
         final int pad = (int) (16 * getResources().getDisplayMetrics().density);
         ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(bars.left + pad, bars.top + pad, bars.right + pad, bars.bottom + pad);
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             return insets;
         });
 
+        binding.buttonBack.setOnClickListener(v -> finish());
         binding.recyclerSteps.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerSteps.setAdapter(adapter);
+
+        // Configure OpenStreetMap WebView
+        WebSettings webSettings = binding.mapWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setLoadsImagesAutomatically(true);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setLoadWithOverviewMode(true);
+        webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 12; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 KrishiChain/1.0");
 
         final String cropKey = getIntent().getStringExtra(RankingActivity.EXTRA_CROP_KEY);
         cropName = getIntent().getStringExtra(RankingActivity.EXTRA_CROP_NAME);
@@ -66,17 +81,16 @@ public class RouteActivity extends AppCompatActivity {
         originName = getIntent().getStringExtra(RankingActivity.EXTRA_ORIGIN_NAME);
         final int destId = getIntent().getIntExtra(EXTRA_DEST_ID, -1);
         final double price = getIntent().getDoubleExtra(EXTRA_PRICE, 0);
+
         if (cropKey == null || qtyKg <= 0 || originId < 0 || destId < 0) {
             finish();
             return;
         }
 
-        binding.radioMode.setOnCheckedChangeListener((group, checkedId) -> {
-            RouteResult r = checkedId == R.id.radioFastest ? fastest : cheapest;
-            if (r != null) {
-                showRoute(r);
-            }
-        });
+        binding.tabCheapest.setOnClickListener(v -> setRouteMode(false));
+        binding.tabFastest.setOnClickListener(v -> setRouteMode(true));
+
+        binding.buttonStartNavigation.setOnClickListener(v -> startNavigation());
         binding.buttonShare.setOnClickListener(v -> share());
         binding.buttonMap.setOnClickListener(v -> openMap());
         binding.buttonCall.setOnClickListener(v -> openDialer());
@@ -84,9 +98,29 @@ public class RouteActivity extends AppCompatActivity {
         calculate(cropKey, originId, destId, price);
     }
 
+    private void setRouteMode(boolean fast) {
+        isFastestMode = fast;
+        if (fast) {
+            binding.tabFastest.setBackgroundResource(R.drawable.bg_tab_on);
+            binding.tabFastest.setTextColor(Color.WHITE);
+            binding.tabCheapest.setBackgroundResource(R.drawable.bg_tab_off);
+            binding.tabCheapest.setTextColor(Color.parseColor("#143E23"));
+        } else {
+            binding.tabCheapest.setBackgroundResource(R.drawable.bg_tab_on);
+            binding.tabCheapest.setTextColor(Color.WHITE);
+            binding.tabFastest.setBackgroundResource(R.drawable.bg_tab_off);
+            binding.tabFastest.setTextColor(Color.parseColor("#143E23"));
+        }
+        RouteResult r = fast ? fastest : cheapest;
+        if (r != null) {
+            showRoute(r);
+        }
+    }
+
     private void calculate(final String cropKey, final int originId, final int destId,
                            final double price) {
         final Context app = getApplicationContext();
+        binding.progress.setVisibility(View.VISIBLE);
         AppDatabase.IO.execute(() -> {
             try {
                 NetworkLoader.loadIfNeeded(app);
@@ -114,9 +148,7 @@ public class RouteActivity extends AppCompatActivity {
                     binding.recyclerSteps.setVisibility(View.VISIBLE);
                     binding.buttonShare.setEnabled(true);
                     binding.buttonMap.setEnabled(true);
-                    binding.textRouteSummary.setText(getString(R.string.route_summary,
-                            cropName, qtyKg, originName, dest.name));
-                    showRoute(binding.radioFastest.isChecked() ? fastest : cheapest);
+                    showRoute(isFastestMode ? fastest : cheapest);
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
@@ -124,7 +156,7 @@ public class RouteActivity extends AppCompatActivity {
                         return;
                     }
                     binding.progress.setVisibility(View.GONE);
-                    binding.textCompare.setText(getString(R.string.route_error, e.getMessage()));
+                    binding.textRouteMeta.setText(getString(R.string.route_error, e.getMessage()));
                 });
             }
         });
@@ -133,29 +165,37 @@ public class RouteActivity extends AppCompatActivity {
     private void showRoute(RouteResult r) {
         current = r;
         adapter.setItems(r.legs);
-        binding.textProfit.setText(getString(R.string.route_profit, r.option.netProfit));
-        binding.textTotals.setText(getString(R.string.route_totals, r.km,
-                Fmt.duration(this, r.minutes), r.option.transportCost, r.option.toll,
-                r.option.spoilageFraction * 100.0));
+        int districtCount = r.placeNames != null ? r.placeNames.size() : (r.legs.size() + 1);
+        binding.textWaypointsSummary.setText(String.format(Locale.US, "%d Districts Visited", districtCount));
+        binding.linearRouteView.setRoute(r.placeNames, r.legs);
 
-        if (r.legs.isEmpty()) {
-            binding.textCompare.setText(R.string.route_here);
-        } else if (cheapest.placeNames.equals(fastest.placeNames)) {
-            binding.textCompare.setText(R.string.route_same);
-        } else {
-            binding.textCompare.setText(getString(R.string.route_compare,
-                    cheapest.option.netProfit, Fmt.duration(this, cheapest.minutes),
-                    fastest.option.netProfit, Fmt.duration(this, fastest.minutes)));
+        String destName = destNode != null ? destNode.name : "Market";
+        double price = getIntent().getDoubleExtra(EXTRA_PRICE, 0);
+
+        binding.textRouteTitle.setText(originName + " → " + destName);
+        binding.textRouteMeta.setText(String.format(Locale.US, "Distance %.0f km · Time %s",
+                r.km, Fmt.duration(this, r.minutes)));
+        binding.textProfit.setText(String.format(Locale.US, "Net profit ৳ %,.0f", r.option.netProfit));
+
+        // Render OpenStreetMap with exact GPS path nodes
+        String mapHtml = OsmMapHelper.buildHtml(r.nodes, originName, destName, price);
+        binding.mapWebView.loadDataWithBaseURL("https://openstreetmap.org", mapHtml, "text/html", "UTF-8", null);
+    }
+
+    private void startNavigation() {
+        if (destNode == null) return;
+        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + destNode.lat + "," + destNode.lon + "&mode=d");
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        try {
+            startActivity(mapIntent);
+        } catch (Exception e) {
+            openMap();
         }
     }
 
-    // ---------------- Implicit Intents ----------------
-    // An implicit Intent names an ACTION, not a class. Android finds an app that can handle it.
-
     private void share() {
-        if (current == null) {
-            return;
-        }
+        if (current == null || destNode == null) return;
         String text = getString(R.string.share_text, qtyKg, cropName, destNode.name, originName,
                 TextUtils.join(" → ", current.placeNames), current.km,
                 Fmt.duration(this, current.minutes), current.option.netProfit);
@@ -166,16 +206,13 @@ public class RouteActivity extends AppCompatActivity {
     }
 
     private void openMap() {
-        if (destNode == null) {
-            return;
-        }
+        if (destNode == null) return;
         String label = Uri.encode(destNode.name);
         Uri uri = Uri.parse("geo:" + destNode.lat + "," + destNode.lon
                 + "?q=" + destNode.lat + "," + destNode.lon + "(" + label + ")");
         start(new Intent(Intent.ACTION_VIEW, uri));
     }
 
-    /** Opens the dialer with no number: the app has no phone numbers yet. */
     private void openDialer() {
         start(new Intent(Intent.ACTION_DIAL, Uri.parse("tel:")));
     }
