@@ -26,28 +26,28 @@ public final class BottomNavHelper {
         if (root == null) return;
 
         View navHome = root.findViewById(R.id.navHome);
-        View navMap = root.findViewById(R.id.navMap);
         View navPrices = root.findViewById(R.id.navPrices);
+        View navMap = root.findViewById(R.id.navMap);
         View navMore = root.findViewById(R.id.navMore);
 
         ImageView iconHome = root.findViewById(R.id.iconHome);
-        ImageView iconMap = root.findViewById(R.id.iconMap);
         ImageView iconPrices = root.findViewById(R.id.iconPrices);
+        ImageView iconMap = root.findViewById(R.id.iconMap);
         ImageView iconMore = root.findViewById(R.id.iconMore);
 
         TextView textHome = root.findViewById(R.id.textHome);
-        TextView textMap = root.findViewById(R.id.textMap);
         TextView textPrices = root.findViewById(R.id.textPrices);
+        TextView textMap = root.findViewById(R.id.textMap);
         TextView textMore = root.findViewById(R.id.textMore);
 
         View indHome = root.findViewById(R.id.indicatorHome);
-        View indMap = root.findViewById(R.id.indicatorMap);
         View indPrices = root.findViewById(R.id.indicatorPrices);
+        View indMap = root.findViewById(R.id.indicatorMap);
         View indMore = root.findViewById(R.id.indicatorMore);
 
         setTabState(currentTab == Tab.HOME, iconHome, textHome, indHome);
-        setTabState(currentTab == Tab.MAP, iconMap, textMap, indMap);
         setTabState(currentTab == Tab.PRICES, iconPrices, textPrices, indPrices);
+        setTabState(currentTab == Tab.MAP, iconMap, textMap, indMap);
         setTabState(currentTab == Tab.MORE, iconMore, textMore, indMore);
 
         if (navHome != null) {
@@ -57,17 +57,17 @@ public final class BottomNavHelper {
                 }
             });
         }
+        if (navPrices != null) {
+            navPrices.setOnClickListener(v -> {
+                if (currentTab != Tab.PRICES) {
+                    launch(activity, AllPricesActivity.class);
+                }
+            });
+        }
         if (navMap != null) {
             navMap.setOnClickListener(v -> {
                 if (currentTab != Tab.MAP) {
                     launch(activity, MarketMapActivity.class);
-                }
-            });
-        }
-        if (navPrices != null) {
-            navPrices.setOnClickListener(v -> {
-                if (currentTab != Tab.PRICES) {
-                    launch(activity, ReportsActivity.class);
                 }
             });
         }

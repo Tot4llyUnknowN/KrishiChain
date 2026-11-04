@@ -48,45 +48,7 @@
             android:visibility="invisible" />
     </LinearLayout>
 
-    <!-- 2: Map (64 Zillas) -->
-    <LinearLayout
-        android:id="@+id/navMap"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:orientation="vertical">
-
-        <ImageView
-            android:id="@+id/iconMap"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:contentDescription="Map Tab"
-            android:src="@drawable/ic_nav_map"
-            app:tint="#6B7F72" />
-
-        <TextView
-            android:id="@+id/textMap"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="Map"
-            android:textColor="#6B7F72"
-            android:textSize="10sp" />
-
-        <View
-            android:id="@+id/indicatorMap"
-            android:layout_width="18dp"
-            android:layout_height="2.5dp"
-            android:layout_marginTop="2dp"
-            android:background="@drawable/bg_bottom_nav_indicator"
-            android:visibility="invisible" />
-    </LinearLayout>
-
-    <!-- 3: Prices -->
+    <!-- 2: Prices -->
     <LinearLayout
         android:id="@+id/navPrices"
         android:layout_width="0dp"
@@ -124,7 +86,45 @@
             android:visibility="invisible" />
     </LinearLayout>
 
-    <!-- 4: More -->
+    <!-- 3: Map (64 Zillas) -->
+    <LinearLayout
+        android:id="@+id/navMap"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/iconMap"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="Map Tab"
+            android:src="@drawable/ic_nav_map"
+            app:tint="#6B7F72" />
+
+        <TextView
+            android:id="@+id/textMap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Map"
+            android:textColor="#6B7F72"
+            android:textSize="10sp" />
+
+        <View
+            android:id="@+id/indicatorMap"
+            android:layout_width="18dp"
+            android:layout_height="2.5dp"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/bg_bottom_nav_indicator"
+            android:visibility="invisible" />
+    </LinearLayout>
+
+    <!-- 3: More -->
     <LinearLayout
         android:id="@+id/navMore"
         android:layout_width="0dp"

@@ -54,6 +54,7 @@ public class PlannerActivity extends AppCompatActivity {
         });
 
         binding.buttonBack.setOnClickListener(v -> finish());
+        TopBarHelper.setup(this, binding.getRoot());
         binding.graphView.setDelayMs(150);
         binding.graphView.setListener(new GraphView.Listener() {
             @Override

@@ -7,6 +7,8 @@
     android:background="@color/home_bg"
     android:orientation="vertical">
 
+    <include layout="@layout/layout_top_status_bar" />
+
     <!-- Top App Bar / Header -->
     <LinearLayout
         android:layout_width="match_parent"

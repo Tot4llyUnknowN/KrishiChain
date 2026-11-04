@@ -71,8 +71,9 @@ public final class MarketRanker {
             double spoilage = Math.min(1.0, spoilagePctPerHour / 100.0 * (minutes / 60.0));
             MarketOption option = new MarketOption(p.nodeId, snap.nodes.get(idx).name,
                     p.price, qtyKg, prodCostPerKg, transportCost, tollCost, spoilage);
+            double demandTons = DistrictDemand.getDemandTons(p.nodeId);
             options.add(option);
-            byNode.put(p.nodeId, new RankedMarket(option, km, minutes, ids));
+            byNode.put(p.nodeId, new RankedMarket(option, km, minutes, ids, demandTons));
         }
 
         Sorts.quickSort(options, Sorts.byNetProfitDesc());
@@ -86,7 +87,9 @@ public final class MarketRanker {
                 nearest = r;
             }
         }
-        return new RankingResult(ranked, nearest);
+
+        SupplyDemandAllocation allocation = SupplyDemandFlowRouter.allocate(ranked, qtyKg);
+        return new RankingResult(ranked, nearest, allocation);
     }
 
     /** Overload for backwards compatibility with default production cost. */

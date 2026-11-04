@@ -14,6 +14,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
@@ -38,21 +39,21 @@ import com.kuet.krishichain.data.NodeEntity;
 import com.kuet.krishichain.data.PriceEntity;
 import com.kuet.krishichain.data.UserPreferences;
 import com.kuet.krishichain.databinding.ActivityMainBinding;
-import com.kuet.krishichain.databinding.DialogMoreToolsBinding;
 import com.kuet.krishichain.domain.MarketRanker;
 import com.kuet.krishichain.domain.NetworkSnapshot;
 import com.kuet.krishichain.domain.RankedMarket;
 import com.kuet.krishichain.domain.RankingResult;
 import com.kuet.krishichain.receiver.ConnectivityReceiver;
 import com.kuet.krishichain.service.SyncService;
+import com.kuet.krishichain.ui.AllPricesActivity;
 import com.kuet.krishichain.ui.BenchmarkActivity;
 import com.kuet.krishichain.ui.BottomNavHelper;
-import com.kuet.krishichain.ui.BottleneckActivity;
+import com.kuet.krishichain.ui.TopBarHelper;
 import com.kuet.krishichain.ui.GraphLabActivity;
 import com.kuet.krishichain.ui.HomeExtras;
 import com.kuet.krishichain.ui.PlannerActivity;
+import com.kuet.krishichain.ui.PriceReportDialogHelper;
 import com.kuet.krishichain.ui.RankingActivity;
-import com.kuet.krishichain.ui.ReportsActivity;
 import com.kuet.krishichain.ui.RouteActivity;
 
 import java.util.List;
@@ -73,15 +74,13 @@ public class MainActivity extends AppCompatActivity {
 
     private final ActivityResultLauncher<String> notificationPermission =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
-                if (!granted) {
-                    binding.textSync.setText(R.string.sync_no_notif);
-                }
             });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         Log.d(TAG, "MainActivity onCreate");
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -168,9 +167,25 @@ public class MainActivity extends AppCompatActivity {
         // 5. Action Cards Row (4 actions matching home.jpeg)
         binding.cardActionFind.setOnClickListener(v -> onFindClicked());
         binding.cardActionRoute.setOnClickListener(v -> openDefaultRoute());
-        binding.cardActionPrices.setOnClickListener(v ->
-                startActivity(new Intent(this, ReportsActivity.class)));
+        binding.cardActionPrices.setOnClickListener(v -> {
+            int cropPos = binding.spinnerCrop.getSelectedItemPosition();
+            String cropKey = (cropPos >= 0 && cropPos < CROP_KEYS.length) ? CROP_KEYS[cropPos] : "potato";
+            Intent intent = new Intent(this, AllPricesActivity.class);
+            intent.putExtra(AllPricesActivity.EXTRA_CROP, cropKey);
+            startActivity(intent);
+        });
         binding.cardActionWeather.setOnClickListener(v -> toggleWeatherSimulation());
+
+        // Quick Report Price Banner on Homepage
+        binding.bannerReportPriceHome.setOnClickListener(v -> {
+            int cropPos = binding.spinnerCrop.getSelectedItemPosition();
+            String cropKey = (cropPos >= 0 && cropPos < CROP_KEYS.length) ? CROP_KEYS[cropPos] : "potato";
+            NodeEntity origin = (NodeEntity) binding.spinnerOrigin.getSelectedItem();
+            Integer originId = origin != null ? origin.id : null;
+            PriceReportDialogHelper.show(this, cropKey, originId, (crop, price, nodeId) -> {
+                updateRankingsAndProfits();
+            });
+        });
 
         // 6. See Details on Estimated Profit card
         binding.buttonSeeDetails.setOnClickListener(v -> openDefaultRoute());
@@ -178,11 +193,7 @@ public class MainActivity extends AppCompatActivity {
         // 7. Top Markets section "See All →"
         binding.buttonSeeAllMarkets.setOnClickListener(v -> onFindClicked());
 
-        // 8. Road Updates banner
-        binding.bannerRoadUpdates.setOnClickListener(v ->
-                startActivity(new Intent(this, BottleneckActivity.class)));
-
-        // 9. Bottom Navigation
+        // 8. Bottom Navigation
         BottomNavHelper.setup(this, BottomNavHelper.Tab.HOME, binding.getRoot());
 
         homeExtras = new HomeExtras(this);
@@ -305,25 +316,32 @@ public class MainActivity extends AppCompatActivity {
         topMarket = best;
 
         // Estimated profit
-        binding.textEstimatedProfit.setText(String.format(Locale.US, "৳ %,d", Math.round(best.option.netProfit)));
-
-        double nearestProfit = result.nearest != null ? result.nearest.option.netProfit : 0;
-        double pctGain = 0;
-        if (nearestProfit > 0 && result.nearest != best) {
-            pctGain = ((best.option.netProfit - nearestProfit) / nearestProfit) * 100.0;
-        }
-
-        if (pctGain > 0.5) {
-            binding.textProfitGain.setText(String.format(Locale.US, "+%.0f%% vs nearest market", pctGain));
+        if (result.allocation != null && result.allocation.isSplit) {
+            binding.textEstimatedProfit.setText(String.format(Locale.US, "৳ %,d", Math.round(result.allocation.combinedNetProfit)));
+            binding.textProfitGain.setText("⚡ Flow Split: " + result.allocation.getSummary());
         } else {
-            binding.textProfitGain.setText("Top market choice · Highest profit");
+            binding.textEstimatedProfit.setText(String.format(Locale.US, "৳ %,d", Math.round(best.option.netProfit)));
+
+            double nearestProfit = result.nearest != null ? result.nearest.option.netProfit : 0;
+            double pctGain = 0;
+            if (nearestProfit > 0 && result.nearest != best) {
+                pctGain = ((best.option.netProfit - nearestProfit) / nearestProfit) * 100.0;
+            }
+
+            if (pctGain > 0.5) {
+                binding.textProfitGain.setText(String.format(Locale.US, "+%.0f%% vs nearest market", pctGain));
+            } else {
+                binding.textProfitGain.setText("Top market choice · Highest profit");
+            }
         }
 
         // Market Card 1 (Gold 1)
         binding.cardMarket1.setVisibility(View.VISIBLE);
         binding.textMarket1Name.setText(best.option.marketName);
-        binding.textMarket1Dist.setText(String.format(Locale.US, "📍 %.0f km", best.km));
+        binding.textMarket1Dist.setText(String.format(Locale.US, "📍 %.0f km · %.0ft demand", best.km, best.demandTons));
         binding.textMarket1Profit.setText(String.format(Locale.US, "৳ %,d", Math.round(best.option.netProfit)));
+        double pctGain = (result.nearest != null && result.nearest != best && result.nearest.option.netProfit > 0)
+                ? ((best.option.netProfit - result.nearest.option.netProfit) / result.nearest.option.netProfit) * 100.0 : 0;
         binding.textMarket1Gain.setText(String.format(Locale.US, "▲ %.0f%%", Math.max(1, pctGain)));
         binding.cardMarket1.setOnClickListener(v -> openRouteFor(best));
 
@@ -332,8 +350,9 @@ public class MainActivity extends AppCompatActivity {
             RankedMarket m2 = result.ranked.get(1);
             binding.cardMarket2.setVisibility(View.VISIBLE);
             binding.textMarket2Name.setText(m2.option.marketName);
-            binding.textMarket2Dist.setText(String.format(Locale.US, "📍 %.0f km", m2.km));
+            binding.textMarket2Dist.setText(String.format(Locale.US, "📍 %.0f km · %.0ft demand", m2.km, m2.demandTons));
             binding.textMarket2Profit.setText(String.format(Locale.US, "৳ %,d", Math.round(m2.option.netProfit)));
+            double nearestProfit = result.nearest != null ? result.nearest.option.netProfit : 0;
             double g2 = (nearestProfit > 0 && result.nearest != m2)
                     ? ((m2.option.netProfit - nearestProfit) / nearestProfit) * 100.0 : 18.0;
             binding.textMarket2Gain.setText(String.format(Locale.US, "▲ %.0f%%", Math.max(1, g2)));
@@ -347,8 +366,9 @@ public class MainActivity extends AppCompatActivity {
             RankedMarket m3 = result.ranked.get(2);
             binding.cardMarket3.setVisibility(View.VISIBLE);
             binding.textMarket3Name.setText(m3.option.marketName);
-            binding.textMarket3Dist.setText(String.format(Locale.US, "📍 %.0f km", m3.km));
+            binding.textMarket3Dist.setText(String.format(Locale.US, "📍 %.0f km · %.0ft demand", m3.km, m3.demandTons));
             binding.textMarket3Profit.setText(String.format(Locale.US, "৳ %,d", Math.round(m3.option.netProfit)));
+            double nearestProfit = result.nearest != null ? result.nearest.option.netProfit : 0;
             double g3 = (nearestProfit > 0 && result.nearest != m3)
                     ? ((m3.option.netProfit - nearestProfit) / nearestProfit) * 100.0 : 12.0;
             binding.textMarket3Gain.setText(String.format(Locale.US, "▲ %.0f%%", Math.max(1, g3)));
@@ -361,7 +381,8 @@ public class MainActivity extends AppCompatActivity {
     private void showProfileDialog() {
         String userDisplay = FirebaseRepository.getUserDisplayName();
         boolean loggedIn = FirebaseRepository.getCurrentUser() != null
-                && !FirebaseRepository.getCurrentUser().isAnonymous();
+                && !FirebaseRepository.getCurrentUser().isAnonymous()
+                && FirebaseRepository.getCurrentUser().isEmailVerified();
 
         new AlertDialog.Builder(this)
                 .setTitle("KrishiChain Profile")
@@ -370,6 +391,10 @@ public class MainActivity extends AppCompatActivity {
                     if (loggedIn) {
                         FirebaseRepository.signOut();
                         Toast.makeText(this, "Signed out", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(this, SplashActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
                     } else {
                         startActivity(new Intent(this, SplashActivity.class));
                     }
@@ -380,48 +405,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void toggleWeatherSimulation() {
         homeExtras.toggleSimulation(() -> {
-            String wt = homeExtras.getLastWeatherText();
-            if (wt != null && !wt.isEmpty()) {
-                binding.textWeatherRoadInfo.setText(wt);
-            }
-            Toast.makeText(this, "Weather condition updated", Toast.LENGTH_SHORT).show();
+            updateRankingsAndProfits();
         });
-    }
-
-    private void showMoreToolsDialog() {
-        DialogMoreToolsBinding db = DialogMoreToolsBinding.inflate(LayoutInflater.from(this));
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setView(db.getRoot())
-                .setCancelable(true)
-                .create();
-
-        db.textDialogWeather.setText(homeExtras.getLastWeatherText());
-
-        db.cardToolBottleneck.setOnClickListener(v -> {
-            dialog.dismiss();
-            startActivity(new Intent(this, BottleneckActivity.class));
-        });
-
-        db.cardToolPlanner.setOnClickListener(v -> {
-            dialog.dismiss();
-            startActivity(new Intent(this, PlannerActivity.class));
-        });
-
-        db.cardToolWeather.setOnClickListener(v -> {
-            homeExtras.toggleSimulation(() -> {
-                db.textDialogWeather.setText(homeExtras.getLastWeatherText());
-                binding.textWeatherRoadInfo.setText(homeExtras.getLastWeatherText());
-            });
-            Toast.makeText(this, "Weather updated", Toast.LENGTH_SHORT).show();
-        });
-
-        db.buttonCloseDialog.setOnClickListener(v -> dialog.dismiss());
-
-        dialog.show();
     }
 
     private void startSync() {
-        binding.textSync.setText(R.string.sync_running);
         ContextCompat.startForegroundService(this, new Intent(this, SyncService.class));
     }
 
@@ -439,10 +427,6 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(() -> showData(origins, nodes, edges, prices, dummy));
             } catch (Exception e) {
                 Log.e(TAG, "Loading failed", e);
-                runOnUiThread(() -> {
-                    if (isDestroyed()) return;
-                    binding.textStatus.setText(getString(R.string.status_error, e.getMessage()));
-                });
             }
         });
     }
@@ -481,9 +465,6 @@ public class MainActivity extends AppCompatActivity {
 
         isSyncingSelection = false;
 
-        binding.textStatus.setText(getString(R.string.status_loaded, nodes, edges, prices));
-        binding.textDemoWarning.setVisibility(dummy > 0 ? View.VISIBLE : View.GONE);
-
         // Calculate initial estimates
         updateRankingsAndProfits();
     }
@@ -515,6 +496,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         BottomNavHelper.setup(this, BottomNavHelper.Tab.HOME, binding.getRoot());
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        binding.getRoot().requestFocus();
+        if (binding.editQuantity != null) {
+            binding.editQuantity.clearFocus();
+        }
+        if (binding.editProdCost != null) {
+            binding.editProdCost.clearFocus();
+        }
+        View currentFocus = getCurrentFocus();
+        if (currentFocus != null) {
+            android.view.inputmethod.InputMethodManager imm =
+                    (android.view.inputmethod.InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
+            }
+        }
         syncPreferencesWithMapTab();
     }
 
@@ -560,11 +557,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         homeExtras.refreshWeatherText();
-        binding.textNet.setText(ConnectivityReceiver.isOnline(this)
-                ? R.string.net_online : R.string.net_offline);
+        TopBarHelper.setup(this, binding.getRoot());
 
         connectivityReceiver = new ConnectivityReceiver((online, regained) -> {
-            binding.textNet.setText(online ? R.string.net_online : R.string.net_offline);
+            TopBarHelper.updateStatus(findViewById(R.id.textTopOnline), online);
             if (regained) {
                 startSync();
                 homeExtras.refreshWeatherSilently();
@@ -577,8 +573,6 @@ public class MainActivity extends AppCompatActivity {
         syncDoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                binding.textSync.setText(getString(R.string.sync_done,
-                        intent.getStringExtra(SyncService.EXTRA_SUMMARY)));
                 homeExtras.refreshWeatherText();
                 updateRankingsAndProfits();
             }

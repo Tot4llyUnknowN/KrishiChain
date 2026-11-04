@@ -6,6 +6,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -66,14 +68,32 @@ public final class FirebaseRepository {
             String uid = user.getUid();
             return "Guest (" + (uid.length() > 6 ? uid.substring(0, 6) : uid) + ")";
         }
+        if (!user.isEmailVerified()) {
+            return "Guest";
+        }
         String email = user.getEmail();
         return (email != null && !email.isEmpty()) ? email : "User (" + user.getUid() + ")";
     }
 
-    /** Signs in with Email and Password. */
+    /** Signs in with Email and Password, requiring email verification. */
     public static void signInWithEmail(String email, String password, CompleteCallback callback) {
         FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-                .addOnSuccessListener(result -> callback.onSuccess("Signed in as " + email))
+                .addOnSuccessListener(result -> {
+                    FirebaseUser user = result.getUser();
+                    if (user != null) {
+                        user.reload().addOnCompleteListener(task -> {
+                            FirebaseUser updated = FirebaseAuth.getInstance().getCurrentUser();
+                            if (updated != null && updated.isEmailVerified()) {
+                                callback.onSuccess("Signed in as " + email);
+                            } else {
+                                FirebaseAuth.getInstance().signOut();
+                                callback.onError("Your email is not verified yet. Please check your inbox and click the verification link.");
+                            }
+                        });
+                    } else {
+                        callback.onError("User not found");
+                    }
+                })
                 .addOnFailureListener(e -> callback.onError("Sign-in failed: " + e.getMessage()));
     }
 
@@ -82,6 +102,73 @@ public final class FirebaseRepository {
         FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
                 .addOnSuccessListener(result -> callback.onSuccess("Account created and signed in!"))
                 .addOnFailureListener(e -> callback.onError("Registration failed: " + e.getMessage()));
+    }
+
+    /** Registers a new account and dispatches an email verification. */
+    public static void signUpWithEmailAndVerification(String email, String password, CompleteCallback callback) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(result -> {
+                    FirebaseUser user = result.getUser();
+                    if (user != null) {
+                        user.sendEmailVerification()
+                                .addOnSuccessListener(v -> callback.onSuccess("Account created! Verification email sent to " + email))
+                                .addOnFailureListener(e -> callback.onSuccess("Account created, but verification email failed: " + e.getMessage()));
+                    } else {
+                        callback.onSuccess("Account created!");
+                    }
+                })
+                .addOnFailureListener(e -> callback.onError("Registration failed: " + e.getMessage()));
+    }
+
+    /** Verifies email using Firebase out-of-band action code. */
+    public static void verifyEmailCode(String code, CompleteCallback callback) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth.applyActionCode(code.trim())
+                .addOnSuccessListener(v -> {
+                    FirebaseUser user = auth.getCurrentUser();
+                    if (user != null) {
+                        user.reload().addOnCompleteListener(t -> callback.onSuccess("Email verified successfully!"));
+                    } else {
+                        callback.onSuccess("Email verified successfully!");
+                    }
+                })
+                .addOnFailureListener(e -> callback.onError("Verification failed: " + e.getMessage()));
+    }
+
+    /** Checks whether the currently logged-in user's email has been verified, forcing an immediate token refresh. */
+    public static void checkEmailVerified(CompleteCallback callback) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            callback.onError("No signed-in user");
+            return;
+        }
+        user.reload().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                callback.onError(task.getException() != null ? task.getException().getMessage() : "Failed to reload user status");
+                return;
+            }
+            user.getIdToken(true).addOnCompleteListener(tokenTask -> {
+                FirebaseUser updated = FirebaseAuth.getInstance().getCurrentUser();
+                if (updated != null && updated.isEmailVerified()) {
+                    callback.onSuccess("Email verified successfully!");
+                } else {
+                    callback.onError("Email is not verified yet. Please click the link sent to your email.");
+                }
+            });
+        });
+    }
+
+    /** Resends the verification email to the currently logged in user. */
+    public static void resendVerificationEmail(CompleteCallback callback) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            callback.onError("No signed-in user found");
+            return;
+        }
+        user.sendEmailVerification()
+                .addOnSuccessListener(v -> callback.onSuccess("Verification email resent to " + user.getEmail()))
+                .addOnFailureListener(e -> callback.onError("Failed to resend: " + e.getMessage()));
     }
 
     /** Signs in anonymously as a guest. */
@@ -100,6 +187,37 @@ public final class FirebaseRepository {
     /** Signs out the current user. */
     public static void signOut() {
         FirebaseAuth.getInstance().signOut();
+    }
+
+    /** Changes password for currently authenticated email user by first re-authenticating. */
+    public static void changePassword(String currentPassword, String newPassword, CompleteCallback callback) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            callback.onError("No signed-in user found.");
+            return;
+        }
+        if (user.isAnonymous() || user.getEmail() == null) {
+            callback.onError("Guest accounts cannot change passwords. Please create or sign into an email account.");
+            return;
+        }
+
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
+        user.reauthenticate(credential).addOnSuccessListener(unused -> {
+            user.updatePassword(newPassword)
+                    .addOnSuccessListener(v -> callback.onSuccess("Password updated successfully!"))
+                    .addOnFailureListener(e -> callback.onError("Failed to update password: " + e.getMessage()));
+        }).addOnFailureListener(e -> callback.onError("Current password is incorrect."));
+    }
+
+    /** Dispatches a password reset email to the specified address. */
+    public static void sendPasswordResetEmail(String email, CompleteCallback callback) {
+        if (email == null || email.trim().isEmpty()) {
+            callback.onError("Please enter your email address.");
+            return;
+        }
+        FirebaseAuth.getInstance().sendPasswordResetEmail(email.trim())
+                .addOnSuccessListener(v -> callback.onSuccess("Password reset link sent to " + email.trim()))
+                .addOnFailureListener(e -> callback.onError("Failed to send reset email: " + e.getMessage()));
     }
 
     /** Authenticates the user anonymously or returns the existing UID. */

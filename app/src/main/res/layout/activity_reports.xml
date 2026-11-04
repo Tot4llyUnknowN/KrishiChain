@@ -7,33 +7,7 @@
     android:background="@color/home_bg"
     android:orientation="vertical">
 
-    <!-- Status Bar (.sb) -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/home_bg"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="7dp"
-        android:paddingBottom="5dp">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="9:41"
-            android:textColor="@color/mut"
-            android:textSize="10sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/net_online"
-            android:textColor="@color/pri"
-            android:textSize="10sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+    <include layout="@layout/layout_top_status_bar" />
 
     <!-- Header (.hd) -->
     <LinearLayout

@@ -7,6 +7,8 @@
     android:background="@color/home_bg"
     android:orientation="vertical">
 
+    <include layout="@layout/layout_top_status_bar" />
+
     <!-- Header matching homepage theme -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -139,18 +141,37 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/sort_by"
-                android:textColor="#64748B"
-                android:textSize="11sp" />
+                android:textColor="#52705D"
+                android:textSize="11.5sp"
+                android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/buttonSortBest"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_badge_ok"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="4dp"
-                android:text="@string/sort_net_profit"
-                android:textColor="@color/badge_ok_text"
-                android:textSize="10.5sp"
+                android:layout_height="32dp"
+                android:background="@drawable/bg_chip_on"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:text="Best Profit"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/buttonSortNearest"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_chip_off"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:text="Nearest First"
+                android:textColor="@color/pri"
+                android:textSize="11sp"
                 android:textStyle="bold" />
         </LinearLayout>
 

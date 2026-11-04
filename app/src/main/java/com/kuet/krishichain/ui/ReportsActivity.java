@@ -57,6 +57,7 @@ public class ReportsActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         BottomNavHelper.setup(this, BottomNavHelper.Tab.PRICES, binding.getRoot());
+        TopBarHelper.setup(this, binding.getRoot());
 
         binding.buttonBack.setOnClickListener(v -> finish());
 
@@ -98,6 +99,7 @@ public class ReportsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         BottomNavHelper.setup(this, BottomNavHelper.Tab.PRICES, binding.getRoot());
+        TopBarHelper.setup(this, binding.getRoot());
         String cropKey = UserPreferences.getCropKey(this, "potato");
         if (!cropKey.equalsIgnoreCase(currentCropKey)) {
             currentCropKey = cropKey;

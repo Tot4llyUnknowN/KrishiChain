@@ -5,7 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/home_bg"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+
+    <include layout="@layout/layout_top_status_bar" />
 
     <!-- Top App Header matching home.jpeg -->
     <LinearLayout
@@ -383,7 +387,7 @@
                     <ImageView
                         android:layout_width="26dp"
                         android:layout_height="26dp"
-                        android:contentDescription="Find Best Market"
+                        android:contentDescription="Check Markets"
                         android:src="@drawable/ic_action_search" />
 
                     <TextView
@@ -392,7 +396,7 @@
                         android:layout_marginTop="6dp"
                         android:gravity="center"
                         android:lineSpacingExtra="1dp"
-                        android:text="Find Best\nMarket"
+                        android:text="Check\nMarkets"
                         android:textColor="#144623"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -416,7 +420,7 @@
                     <ImageView
                         android:layout_width="26dp"
                         android:layout_height="26dp"
-                        android:contentDescription="View Route"
+                        android:contentDescription="Route To Best"
                         android:src="@drawable/ic_action_route" />
 
                     <TextView
@@ -425,7 +429,7 @@
                         android:layout_marginTop="6dp"
                         android:gravity="center"
                         android:lineSpacingExtra="1dp"
-                        android:text="View\nRoute"
+                        android:text="Route To\nBest"
                         android:textColor="#144623"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -482,7 +486,7 @@
                     <ImageView
                         android:layout_width="26dp"
                         android:layout_height="26dp"
-                        android:contentDescription="Weather and Road Info"
+                        android:contentDescription="Simulate Weather"
                         android:src="@drawable/ic_action_weather" />
 
                     <TextView
@@ -491,11 +495,68 @@
                         android:layout_marginTop="6dp"
                         android:gravity="center"
                         android:lineSpacingExtra="1dp"
-                        android:text="Weather &amp;\nRoad Info"
+                        android:text="Simulate\nWeather"
                         android:textColor="#144623"
                         android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
+            </LinearLayout>
+
+            <!-- 3.5 Quick Report Market Price Strip -->
+            <LinearLayout
+                android:id="@+id/bannerReportPriceHome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_action_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="9dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📢"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Report Today's Local Price"
+                        android:textColor="#144623"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Crowdsource bazar rate for all farmers"
+                        android:textColor="#52705D"
+                        android:textSize="10sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_tab_on"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:text="+ Report"
+                    android:textColor="@color/white"
+                    android:textSize="10.5sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- 4. Estimated Profit Hero Card -->
@@ -979,129 +1040,6 @@
                     </LinearLayout>
                 </LinearLayout>
             </HorizontalScrollView>
-
-            <!-- 6. Road Condition Updates Banner -->
-            <LinearLayout
-                android:id="@+id/bannerRoadUpdates"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="14dp"
-                android:layout_marginBottom="12dp"
-                android:background="@drawable/bg_action_card"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="12dp">
-
-                <FrameLayout
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
-                    android:background="@drawable/bg_circle_translucent">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="Live Updates Leaf"
-                        android:src="@drawable/ic_leaf_logo"
-                        app:tint="#16A34A" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New: Live road condition updates"
-                        android:textColor="#143D21"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/textWeatherRoadInfo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Get the latest road and weather info for a safer journey."
-                        android:textColor="#5D7A68"
-                        android:textSize="10.5sp" />
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textColor="#78909C"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <!-- 7. Status & Sync indicators (discreet) -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/textSync"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Sync Idle"
-                        android:textColor="@color/mut"
-                        android:textSize="10sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingHorizontal="6dp"
-                        android:text="•"
-                        android:textColor="@color/mut"
-                        android:textSize="10sp" />
-
-                    <TextView
-                        android:id="@+id/textNet"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/net_online"
-                        android:textColor="@color/pri"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/textStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text=""
-                    android:textColor="@color/mut"
-                    android:textSize="9.5sp" />
-
-                <TextView
-                    android:id="@+id/textDemoWarning"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="⚠ Demo data active"
-                    android:textColor="@color/amb"
-                    android:textSize="9.5sp"
-                    android:visibility="gone" />
-            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

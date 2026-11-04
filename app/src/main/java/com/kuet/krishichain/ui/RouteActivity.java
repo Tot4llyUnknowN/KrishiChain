@@ -62,6 +62,7 @@ public class RouteActivity extends AppCompatActivity {
         });
 
         binding.buttonBack.setOnClickListener(v -> finish());
+        TopBarHelper.setup(this, binding.getRoot());
         binding.recyclerSteps.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerSteps.setAdapter(adapter);
 
@@ -174,8 +175,9 @@ public class RouteActivity extends AppCompatActivity {
         double price = getIntent().getDoubleExtra(EXTRA_PRICE, 0);
 
         binding.textRouteTitle.setText(originName + " → " + destName);
-        binding.textRouteMeta.setText(String.format(Locale.US, "Distance %.0f km · Time %s",
-                r.km, Fmt.duration(this, r.minutes)));
+        double demandTons = destNode != null ? com.kuet.krishichain.domain.DistrictDemand.getDemandTons(destNode.id) : 50.0;
+        binding.textRouteMeta.setText(String.format(Locale.US, "Distance %.0f km · Time %s · Demand %.0ft",
+                r.km, Fmt.duration(this, r.minutes), demandTons));
         binding.textProfit.setText(String.format(Locale.US, "Net profit ৳ %,.0f", r.option.netProfit));
 
         // Render OpenStreetMap with exact GPS path nodes

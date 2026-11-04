@@ -72,16 +72,40 @@ public class HomeExtras {
     public void toggleSimulation(Runnable onComplete) {
         final Context app = activity.getApplicationContext();
         AppDatabase.IO.execute(() -> {
-            if (simulatedNow) {
-                WeatherRepository.clear(app);
-            } else {
-                WeatherRepository.simulate(app);
-            }
-            activity.runOnUiThread(() -> {
-                refreshWeatherText();
-                if (onComplete != null) {
-                    onComplete.run();
+            List<WeatherEntity> current = AppDatabase.get(app).networkDao().getWeather();
+            boolean currentlySimulated = false;
+            for (WeatherEntity w : current) {
+                if (w.simulated) {
+                    currentlySimulated = true;
+                    break;
                 }
+            }
+            final boolean switchToMonsoon = !currentlySimulated;
+            boolean ok = true;
+            if (switchToMonsoon) {
+                WeatherRepository.simulate(app);
+            } else {
+                try {
+                    int count = WeatherRepository.refresh(app);
+                    android.util.Log.d("WeatherExtras", "Refreshed weather count: " + count);
+                } catch (Exception e) {
+                    android.util.Log.e("WeatherExtras", "Weather refresh failed: " + e.getMessage(), e);
+                    ok = false;
+                    WeatherRepository.clear(app);
+                }
+            }
+            final boolean fetchOk = ok;
+            activity.runOnUiThread(() -> {
+                if (switchToMonsoon) {
+                    Toast.makeText(activity, "⛈ Monsoon simulated: Highway delays & costs active", Toast.LENGTH_SHORT).show();
+                } else {
+                    if (fetchOk) {
+                        Toast.makeText(activity, "🌤 Current live weather fetched from satellite", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(activity, "🌤 Weather reset to normal (offline)", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                refreshWeatherText(onComplete);
             });
         });
     }
@@ -102,6 +126,10 @@ public class HomeExtras {
 
     /** Reads the cache and updates the weather status. */
     public void refreshWeatherText() {
+        refreshWeatherText(null);
+    }
+
+    public void refreshWeatherText(Runnable callback) {
         final Context app = activity.getApplicationContext();
         AppDatabase.IO.execute(() -> {
             List<WeatherEntity> rows = AppDatabase.get(app).networkDao().getWeather();
@@ -129,6 +157,9 @@ public class HomeExtras {
                 }
                 simulatedNow = simFinal;
                 lastWeatherText = text;
+                if (callback != null) {
+                    callback.run();
+                }
             });
         });
     }

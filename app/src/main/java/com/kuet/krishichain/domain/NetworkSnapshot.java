@@ -32,7 +32,7 @@ public final class NetworkSnapshot {
     private final List<EdgeEntity> edges;
     private final Map<Long, EdgeEntity> edgeByPair = new HashMap<>();
 
-    private NetworkSnapshot(List<NodeEntity> nodes, List<EdgeEntity> edges,
+    public NetworkSnapshot(List<NodeEntity> nodes, List<EdgeEntity> edges,
                             List<WeatherEntity> weather) {
         this.nodes = nodes;
         this.edges = edges;

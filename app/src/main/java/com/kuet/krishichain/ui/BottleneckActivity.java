@@ -19,20 +19,22 @@ import com.kuet.krishichain.data.AppDatabase;
 import com.kuet.krishichain.data.EdgeEntity;
 import com.kuet.krishichain.data.NetworkDao;
 import com.kuet.krishichain.data.NetworkLoader;
+import com.kuet.krishichain.data.UserPreferences;
 import com.kuet.krishichain.databinding.ActivityBottleneckBinding;
+import com.kuet.krishichain.domain.DistrictDemand;
 import com.kuet.krishichain.domain.NetworkSnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class BottleneckActivity extends AppCompatActivity {
-    private static final double SOURCE_CAP = 1000.0;
-    private static final double MARKET_DEMAND = 150.0;
-
     private ActivityBottleneckBinding binding;
     private NetworkSnapshot snap;
-    private final List<Integer> villages = new ArrayList<>();
+    private final List<Integer> districtNodeIndices = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +50,7 @@ public class BottleneckActivity extends AppCompatActivity {
         });
 
         binding.buttonBack.setOnClickListener(v -> finish());
-        binding.cardCluster.setOnClickListener(v -> binding.spinnerCluster.performClick());
+        TopBarHelper.setup(this, binding.getRoot());
 
         binding.graphView.setListener(new GraphView.Listener() {
             @Override
@@ -92,27 +94,45 @@ public class BottleneckActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        TopBarHelper.setup(this, binding.getRoot());
+    }
+
     private void onNetworkReady(NetworkSnapshot s) {
         snap = s;
         GraphBinder.bind(binding.graphView, s);
 
         List<String> items = new ArrayList<>();
-        items.add(getString(R.string.bn_all));
-        villages.clear();
+        items.add("All Districts (National Network)");
+        districtNodeIndices.clear();
+
+        int savedOriginId = UserPreferences.getOriginId(this, 1);
+        int initialPos = 0;
+
         for (int i = 0; i < s.nodes.size(); i++) {
-            if ("village".equals(s.nodes.get(i).type)) {
-                villages.add(i);
-                items.add(s.nodes.get(i).name);
+            districtNodeIndices.add(i);
+            items.add(s.nodes.get(i).name);
+            if (s.nodes.get(i).id == savedOriginId) {
+                initialPos = i + 1; // 1-based index after "All Districts"
             }
         }
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_item, items);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                this, R.layout.item_spinner_selected, items);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dropdown);
         binding.spinnerCluster.setAdapter(adapter);
+
+        if (initialPos > 0 && initialPos < items.size()) {
+            binding.spinnerCluster.setSelection(initialPos);
+        } else {
+            binding.spinnerCluster.setSelection(0);
+        }
+
         binding.spinnerCluster.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                binding.textClusterDisplay.setText(items.get(position) + " ▾");
                 run();
             }
 
@@ -129,8 +149,8 @@ public class BottleneckActivity extends AppCompatActivity {
 
     private String nameOf(int vertex) {
         int n = snap.nodes.size();
-        if (vertex == n) return getString(R.string.bn_farms);
-        if (vertex == n + 1) return getString(R.string.bn_demand);
+        if (vertex == n) return "National Supply";
+        if (vertex == n + 1) return "Terminal Demand";
         return snap.nodes.get(vertex).name;
     }
 
@@ -141,23 +161,54 @@ public class BottleneckActivity extends AppCompatActivity {
         int superSink = n + 1;
         MaxFlow flow = new MaxFlow(n + 2);
 
+        // Add all highway segments with capacity
         for (EdgeEntity e : snap.edges()) {
             Integer u = snap.idToIndex.get(e.fromId);
             Integer v = snap.idToIndex.get(e.toId);
             if (u != null && v != null) {
-                flow.addEdge(u, v, e.capacity);
+                double cap = (e.capacity > 0) ? e.capacity : 100.0;
+                flow.addEdge(u, v, cap);
             }
         }
+
         int choice = binding.spinnerCluster.getSelectedItemPosition();
         if (choice < 0) choice = 0;
-        for (int i = 0; i < villages.size(); i++) {
-            if (choice == 0 || choice - 1 == i) {
-                flow.addEdge(superSource, villages.get(i), SOURCE_CAP);
+
+        if (choice == 0) {
+            // National Agricultural Network:
+            // Consuming districts absorb freight based on their individual DistrictDemand across all 8 divisions
+            Set<Integer> consumerDistrictIds = new HashSet<>(Arrays.asList(
+                    1, 2, 3, 8, 9, 14, 15, 16, 18, 25, 28, 35, 36, 43, 51, 55, 59
+            ));
+            for (int i = 0; i < n; i++) {
+                int id = snap.nodes.get(i).id;
+                if (consumerDistrictIds.contains(id)) {
+                    double demand = DistrictDemand.getDemandTons(id);
+                    flow.addEdge(i, superSink, demand);
+                }
             }
-        }
-        for (int i = 0; i < n; i++) {
-            if ("market".equals(snap.nodes.get(i).type)) {
-                flow.addEdge(i, superSink, MARKET_DEMAND);
+            // Agricultural producing districts supply freight into the national highway grid
+            for (int i = 0; i < n; i++) {
+                int id = snap.nodes.get(i).id;
+                if (!consumerDistrictIds.contains(id)) {
+                    flow.addEdge(superSource, i, 75.0);
+                } else if (id == 16 || id == 8 || id == 9) {
+                    // Regional production hubs also output surplus
+                    flow.addEdge(superSource, i, 50.0);
+                }
+            }
+        } else {
+            // Specific district supply source selected (choice - 1)
+            int srcIndex = choice - 1;
+            flow.addEdge(superSource, srcIndex, 2500.0); // Selected hub outputs up to 2500 tons/day into national highway grid
+
+            // All other 63 districts absorb freight based on their individual DistrictDemand
+            for (int i = 0; i < n; i++) {
+                if (i != srcIndex) {
+                    int destId = snap.nodes.get(i).id;
+                    double demand = DistrictDemand.getDemandTons(destId);
+                    flow.addEdge(i, superSink, demand);
+                }
             }
         }
 
@@ -166,17 +217,17 @@ public class BottleneckActivity extends AppCompatActivity {
         List<int[]> cutPairs = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         for (FlowEdge e : r.cutEdges) {
-            sb.append(nameOf(e.from)).append(" → ").append(nameOf(e.to))
-                    .append(String.format(Locale.US, " (%.0f/%.0f, full)\n", e.capacity, e.capacity));
             if (e.from < n && e.to < n) {
+                sb.append("🚧 ").append(nameOf(e.from)).append(" → ").append(nameOf(e.to))
+                        .append(String.format(Locale.US, " (%.0f/%.0f tons/day - Saturated Bottleneck)\n", e.capacity, e.capacity));
                 cutPairs.add(new int[]{e.from, e.to});
             }
         }
         if (sb.length() == 0) {
-            sb.append("No bottleneck edges found for this cluster.\n");
+            sb.append("No bottleneck highway corridors found; network easily carries total freight.");
         }
 
-        binding.textFlowInfo.setText(String.format(Locale.US, "Max flow: %.0f t/day", r.maxFlow));
+        binding.textFlowInfo.setText(String.format(Locale.US, "Max Freight Flow: %.0f tons/day", r.maxFlow));
         binding.textCut.setText(sb.toString().trim());
         binding.graphView.loadSteps(r.steps, false, -1, null);
         binding.graphView.setCut(cutPairs);

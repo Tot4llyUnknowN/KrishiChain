@@ -7,33 +7,7 @@
     android:background="@color/home_bg"
     android:orientation="vertical">
 
-    <!-- Status Bar (.sb) -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/home_bg"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="7dp"
-        android:paddingBottom="5dp">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="9:41"
-            android:textColor="@color/mut"
-            android:textSize="10sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/net_online"
-            android:textColor="@color/pri"
-            android:textSize="10sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+    <include layout="@layout/layout_top_status_bar" />
 
     <!-- Header (.hd) -->
     <LinearLayout
@@ -60,7 +34,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/bn_title"
+            android:text="Road Bottleneck &amp; Capacity Analyzer"
             android:textColor="@color/white"
             android:textSize="15sp"
             android:textStyle="bold" />
@@ -73,52 +47,44 @@
         android:orientation="vertical"
         android:padding="10dp">
 
-        <!-- Farmer Cluster Card (.cd .row) -->
+        <!-- Origin / Supply Hub Selector Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardCluster"
             style="@style/Widget.KrishiChain.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="7dp"
-            android:clickable="true"
-            android:focusable="true">
+            android:layout_marginBottom="7dp">
 
-            <FrameLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="9dp">
+                android:layout_height="48dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:text="Origin / Supply Hub:"
+                    android:textColor="@color/ink"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/bn_cluster"
-                        android:textColor="@color/ink"
-                        android:textSize="13sp" />
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_spinner_dropdown">
 
-                    <TextView
-                        android:id="@+id/textClusterDisplay"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/bn_all"
-                        android:textColor="@color/ink"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <Spinner
-                    android:id="@+id/spinnerCluster"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:alpha="0" />
-            </FrameLayout>
+                    <Spinner
+                        android:id="@+id/spinnerCluster"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@null"
+                        android:spinnerMode="dropdown" />
+                </FrameLayout>
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Network Flow Graph View Container -->
@@ -135,7 +101,7 @@
                 android:layout_height="match_parent" />
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Max Flow Card (.cd style="background:var(pri2);font-size:15px;font-weight:800;color:var(pri)") -->
+        <!-- Max Flow Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -155,10 +121,10 @@
                 android:textColor="@color/pri"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                tools:text="Max flow: 180 t/day" />
+                tools:text="Max Freight Flow: 280 tons/day" />
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Min-Cut Edges Card (.cd) -->
+        <!-- Min-Cut Edges Card -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.KrishiChain.Card"
             android:layout_width="match_parent"
@@ -175,7 +141,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/bn_cut_header"
+                    android:text="Bottleneck Highway Corridors (Minimum Cut):"
                     android:textColor="@color/ink"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -188,17 +154,17 @@
                     android:lineSpacingExtra="2dp"
                     android:textColor="@color/mut"
                     android:textSize="11sp"
-                    tools:text="Magura → Faridpur (60/60, full)\nKhulna → Bagerhat (60/60, full)" />
+                    tools:text="Tangail → Gazipur (100/100, full)\nSirajganj → Tangail (100/100, full)" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Assumption Note (.mut) -->
+        <!-- Legend / Note -->
         <TextView
             android:id="@+id/textAssumption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="@string/bn_assume"
+            android:text="Cyan = Freight flow · Thick Red = Saturated bottleneck road · Computes highway capacity using Edmonds-Karp Max-Flow Min-Cut."
             android:textColor="@color/mut"
             android:textSize="10.5sp" />
 

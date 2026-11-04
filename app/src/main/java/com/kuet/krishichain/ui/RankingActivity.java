@@ -2,6 +2,7 @@ package com.kuet.krishichain.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 
@@ -12,6 +13,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.kuet.krishichain.R;
+import com.kuet.krishichain.algo.Sorts;
 import com.kuet.krishichain.data.AppDatabase;
 import com.kuet.krishichain.data.CropInfo;
 import com.kuet.krishichain.data.CropXmlParser;
@@ -37,6 +39,8 @@ public class RankingActivity extends AppCompatActivity {
     private ActivityRankingBinding binding;
     private final MarketAdapter adapter = new MarketAdapter();
     private RankedMarket topMarket;
+    private RankingResult currentResult;
+    private boolean isSortByNearest = false;
 
     private String cropKey;
     private String cropName;
@@ -58,6 +62,7 @@ public class RankingActivity extends AppCompatActivity {
         });
 
         binding.buttonBack.setOnClickListener(v -> finish());
+        TopBarHelper.setup(this, binding.getRoot());
         binding.recycler.setLayoutManager(new LinearLayoutManager(this));
         binding.recycler.setAdapter(adapter);
 
@@ -82,6 +87,19 @@ public class RankingActivity extends AppCompatActivity {
         binding.buttonViewDetails.setOnClickListener(v -> {
             if (topMarket != null) {
                 openRoute(topMarket);
+            }
+        });
+
+        binding.buttonSortBest.setOnClickListener(v -> {
+            if (isSortByNearest) {
+                isSortByNearest = false;
+                applySorting();
+            }
+        });
+        binding.buttonSortNearest.setOnClickListener(v -> {
+            if (!isSortByNearest) {
+                isSortByNearest = true;
+                applySorting();
             }
         });
 
@@ -153,6 +171,7 @@ public class RankingActivity extends AppCompatActivity {
 
     private void show(RankingResult result, int dummyCount) {
         if (isDestroyed()) return;
+        currentResult = result;
         binding.progress.setVisibility(View.GONE);
         binding.textDemoWarning.setVisibility(dummyCount > 0 ? View.VISIBLE : View.GONE);
 
@@ -165,21 +184,48 @@ public class RankingActivity extends AppCompatActivity {
 
         topMarket = best;
         binding.textTopMarketName.setText("🏅 " + best.option.marketName);
-        double perKg = qtyKg > 0 ? (best.option.netProfit / qtyKg) : best.option.netProfit;
-        binding.textTopMarketProfit.setText(String.format(Locale.US, "Net profit ৳ %.2f/kg", perKg));
-        binding.cardTopMarket.setVisibility(View.VISIBLE);
-
-        RankedMarket nearest = result.nearest;
-        if (best.option.nodeId == nearest.option.nodeId) {
-            binding.textInsight.setText(getString(R.string.ranking_insight_same, best.option.marketName));
+        if (result.allocation != null && result.allocation.isSplit) {
+            binding.textTopMarketProfit.setText(String.format(Locale.US,
+                    "Flow Profit: ৳ %,d (Split across %d markets)",
+                    Math.round(result.allocation.combinedNetProfit), result.allocation.items.size()));
+            binding.textInsight.setVisibility(View.VISIBLE);
+            binding.textInsight.setText("⚡ Supply-Demand Flow: " + result.allocation.getSummary());
         } else {
-            binding.textInsight.setText(getString(R.string.ranking_insight_better,
-                    best.option.marketName,
-                    best.option.netProfit - nearest.option.netProfit,
-                    nearest.option.marketName));
+            double perKg = qtyKg > 0 ? (best.option.netProfit / qtyKg) : best.option.netProfit;
+            binding.textTopMarketProfit.setText(String.format(Locale.US, "Net profit ৳ %.2f/kg", perKg));
+            RankedMarket nearest = result.nearest;
+            if (nearest != null) {
+                if (best.option.nodeId == nearest.option.nodeId) {
+                    binding.textInsight.setText(getString(R.string.ranking_insight_same, best.option.marketName));
+                } else {
+                    binding.textInsight.setText(getString(R.string.ranking_insight_better,
+                            best.option.marketName,
+                            best.option.netProfit - nearest.option.netProfit,
+                            nearest.option.marketName));
+                }
+            }
         }
-
-        adapter.setItems(result.ranked, nearest.option.nodeId);
+        binding.cardTopMarket.setVisibility(View.VISIBLE);
+        applySorting();
         binding.recycler.setVisibility(View.VISIBLE);
+    }
+
+    private void applySorting() {
+        if (currentResult == null || currentResult.ranked.isEmpty()) return;
+        int nearestId = currentResult.nearest != null ? currentResult.nearest.option.nodeId : -1;
+        if (isSortByNearest) {
+            Sorts.quickSort(currentResult.ranked, RankedMarket.BY_NEAREST_DISTANCE);
+            binding.buttonSortNearest.setBackgroundResource(R.drawable.bg_chip_on);
+            binding.buttonSortNearest.setTextColor(Color.WHITE);
+            binding.buttonSortBest.setBackgroundResource(R.drawable.bg_chip_off);
+            binding.buttonSortBest.setTextColor(Color.parseColor("#1B7A2F"));
+        } else {
+            Sorts.quickSort(currentResult.ranked, RankedMarket.BY_BEST_PROFIT);
+            binding.buttonSortBest.setBackgroundResource(R.drawable.bg_chip_on);
+            binding.buttonSortBest.setTextColor(Color.WHITE);
+            binding.buttonSortNearest.setBackgroundResource(R.drawable.bg_chip_off);
+            binding.buttonSortNearest.setTextColor(Color.parseColor("#1B7A2F"));
+        }
+        adapter.setItems(currentResult.ranked, nearestId);
     }
 }

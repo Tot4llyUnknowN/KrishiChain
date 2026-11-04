@@ -57,6 +57,7 @@ public class MarketMapActivity extends AppCompatActivity {
 
         // Setup bottom navigation bar (Tab.MAP)
         BottomNavHelper.setup(this, BottomNavHelper.Tab.MAP, binding.getRoot());
+        TopBarHelper.setup(this, binding.getRoot());
 
         // Load shared preferences for origin and crop
         selectedOriginId = UserPreferences.getOriginId(this, 1);
@@ -131,6 +132,7 @@ public class MarketMapActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         BottomNavHelper.setup(this, BottomNavHelper.Tab.MAP, binding.getRoot());
+        TopBarHelper.setup(this, binding.getRoot());
         syncWithSharedPreferences();
     }
 
@@ -357,7 +359,8 @@ public class MarketMapActivity extends AppCompatActivity {
                     binding.textOptimalRouteNodes.setText("Optimal Route: " + TextUtils.join(" → ", result.placeNames));
 
                     binding.layoutMetaRow.setVisibility(View.VISIBLE);
-                    binding.textMetaDist.setText(String.format(Locale.US, "📍 %.0f km", result.km));
+                    double demandTons = com.kuet.krishichain.domain.DistrictDemand.getDemandTons(destId);
+                    binding.textMetaDist.setText(String.format(Locale.US, "📍 %.0f km · %.0ft demand", result.km, demandTons));
                     binding.textMetaTime.setText(String.format(Locale.US, "⏱ %s", Fmt.duration(this, result.minutes)));
                     binding.textMetaProfit.setText(String.format(Locale.US, "Est. Profit ৳ %,d", Math.round(result.option.netProfit)));
 

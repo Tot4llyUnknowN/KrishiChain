@@ -71,7 +71,17 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.VH> {
         b.textRank.setText(String.valueOf(position + 1));
 
         b.textName.setText(m.option.marketName);
-        b.textRoute.setText(c.getString(R.string.item_route, m.km, formatDuration(c, m.minutes)));
+        b.textRoute.setText(String.format(Locale.US, "📍 %.0f km · %s · %.0ft demand",
+                m.km, formatDuration(c, m.minutes), m.demandTons));
+
+        if (m.allocatedTons > 0) {
+            b.textCosts.setVisibility(View.VISIBLE);
+            b.textCosts.setText(String.format(Locale.US, "⚡ Flow: %.0ft allocated%s",
+                    m.allocatedTons, (m.allocatedTons >= m.demandTons - 0.001) ? " (Full)" : ""));
+            b.textCosts.setTextColor(Color.parseColor("#1B7A2F"));
+        } else {
+            b.textCosts.setVisibility(View.GONE);
+        }
 
         // Profit formatted cleanly matching mockup ৳42.50
         double perKg = qtyKg > 0 ? (m.option.netProfit / qtyKg) : m.option.netProfit;

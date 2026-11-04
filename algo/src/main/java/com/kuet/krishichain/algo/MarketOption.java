@@ -22,7 +22,7 @@ public final class MarketOption {
         this.marketName = marketName;
         this.pricePerKg = pricePerKg;
         this.quantityKg = quantityKg;
-        this.prodCostPerKg = prodCostPerKg > 0 ? prodCostPerKg : DEFAULT_PRODUCTION_COST_PER_KG;
+        this.prodCostPerKg = prodCostPerKg >= 0 ? prodCostPerKg : DEFAULT_PRODUCTION_COST_PER_KG;
         this.productionCost = this.prodCostPerKg * quantityKg;
         this.transportCost = transportCost;
         this.toll = toll;
@@ -35,6 +35,6 @@ public final class MarketOption {
 
     public MarketOption(int nodeId, String marketName, double pricePerKg, double quantityKg,
                         double transportCost, double toll, double spoilageFraction) {
-        this(nodeId, marketName, pricePerKg, quantityKg, DEFAULT_PRODUCTION_COST_PER_KG, transportCost, toll, spoilageFraction);
+        this(nodeId, marketName, pricePerKg, quantityKg, 0.0, transportCost, toll, spoilageFraction);
     }
 }
