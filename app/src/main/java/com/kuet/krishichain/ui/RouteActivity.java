@@ -132,10 +132,11 @@ public class RouteActivity extends AppCompatActivity {
                         rate = info.spoilagePctPerHour;
                     }
                 }
+                double prodCost = com.kuet.krishichain.data.UserPreferences.getProductionCost(app, 20.0);
                 final RouteResult cheap = RouteCalculator.compute(
-                        snap, originId, destId, price, qtyKg, rate, false);
+                        snap, originId, destId, price, qtyKg, prodCost, rate, false);
                 final RouteResult fast = RouteCalculator.compute(
-                        snap, originId, destId, price, qtyKg, rate, true);
+                        snap, originId, destId, price, qtyKg, prodCost, rate, true);
                 final NodeEntity dest = snap.nodeById(destId);
                 runOnUiThread(() -> {
                     if (isDestroyed()) {

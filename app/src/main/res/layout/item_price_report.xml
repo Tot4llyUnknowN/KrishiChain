@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Widget.KrishiChain.Card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="7dp">
+    android:layout_marginBottom="8dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="1.5dp"
+    app:strokeColor="#DEE8DF"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="9dp">
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="11dp">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -21,45 +26,60 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/textDistrictName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#142C1B"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                tools:text="Dhaka Market Hub" />
+
+            <TextView
                 android:id="@+id/textMarketCrop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/ink"
+                android:layout_marginTop="2dp"
+                android:textColor="#4F6F59"
                 android:textSize="12sp"
                 tools:text="🥔 Potato" />
-
-            <TextView
-                android:id="@+id/textPrice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/ink"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                tools:text="৳34.5/kg" />
 
             <TextView
                 android:id="@+id/textReportMeta"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:textColor="@color/mut"
-                android:textSize="9.5sp"
-                tools:text="Khulna · just now" />
+                android:layout_marginTop="2dp"
+                android:textColor="#7A9482"
+                android:textSize="10sp"
+                tools:text="Updated 2 hrs ago" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/textStatusBadge"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_badge_ok"
-            android:paddingHorizontal="7dp"
-            android:paddingVertical="2dp"
-            android:text="VALID"
-            android:textColor="@color/badge_ok_text"
-            android:textSize="9sp"
-            android:textStyle="bold"
-            tools:text="VALID" />
-    </LinearLayout>
+            android:gravity="end"
+            android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/textPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#1B7A2F"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                tools:text="৳ 48.5 / kg" />
+
+            <TextView
+                android:id="@+id/textStatusBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:background="@drawable/bg_badge_ok"
+                android:paddingHorizontal="7dp"
+                android:paddingVertical="2dp"
+                android:text="MARKET PRICE"
+                android:textColor="#1E652E"
+                android:textSize="9.5sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

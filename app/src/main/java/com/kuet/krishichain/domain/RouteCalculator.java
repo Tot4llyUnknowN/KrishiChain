@@ -14,7 +14,7 @@ public final class RouteCalculator {
     private RouteCalculator() { }
 
     public static RouteResult compute(NetworkSnapshot snap, int originId, int destId,
-                                      double pricePerKg, double qtyKg,
+                                      double pricePerKg, double qtyKg, double prodCostPerKg,
                                       double spoilagePctPerHour, boolean byTime) {
         Integer o = snap.idToIndex.get(originId);
         Integer d = snap.idToIndex.get(destId);
@@ -51,9 +51,22 @@ public final class RouteCalculator {
                 toll += leg.toll;
             }
         }
+
+        // Add base dispatch fee for inter-district shipments
+        if (originId != destId && !legs.isEmpty()) {
+            cost += MarketRanker.BASE_INTERDISTRICT_DISPATCH_FEE;
+        }
+
         double spoilage = Math.min(1.0, spoilagePctPerHour / 100.0 * (minutes / 60.0));
         MarketOption option = new MarketOption(destId, snap.nodes.get(d).name,
-                pricePerKg, qtyKg, cost, toll, spoilage);
+                pricePerKg, qtyKg, prodCostPerKg, cost, toll, spoilage);
         return new RouteResult(option, legs, names, pathNodes, km, minutes, byTime);
+    }
+
+    public static RouteResult compute(NetworkSnapshot snap, int originId, int destId,
+                                      double pricePerKg, double qtyKg,
+                                      double spoilagePctPerHour, boolean byTime) {
+        return compute(snap, originId, destId, pricePerKg, qtyKg,
+                MarketOption.DEFAULT_PRODUCTION_COST_PER_KG, spoilagePctPerHour, byTime);
     }
 }

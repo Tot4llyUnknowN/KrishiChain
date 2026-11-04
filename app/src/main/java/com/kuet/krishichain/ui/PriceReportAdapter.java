@@ -22,7 +22,7 @@ public class PriceReportAdapter extends RecyclerView.Adapter<PriceReportAdapter.
 
     private final List<PriceReport> reports = new ArrayList<>();
     private final Map<Integer, String> nodeNames;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm", Locale.US);
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, HH:mm", Locale.US);
 
     public PriceReportAdapter(Map<Integer, String> nodeNames) {
         this.nodeNames = nodeNames;
@@ -64,8 +64,9 @@ public class PriceReportAdapter extends RecyclerView.Adapter<PriceReportAdapter.
             }
         }
 
+        holder.binding.textDistrictName.setText(marketName + " Market Hub");
         holder.binding.textMarketCrop.setText(emoji + " " + cropName);
-        holder.binding.textPrice.setText(String.format(Locale.US, "৳%.1f/kg", report.price));
+        holder.binding.textPrice.setText(String.format(Locale.US, "৳ %.1f / kg", report.price));
 
         if (report.isOutlier) {
             holder.binding.textStatusBadge.setText("OUTLIER");
@@ -73,14 +74,14 @@ public class PriceReportAdapter extends RecyclerView.Adapter<PriceReportAdapter.
             holder.binding.textStatusBadge.setTextColor(Color.parseColor("#C62828"));
             holder.binding.textPrice.setTextColor(Color.parseColor("#D32F2F"));
         } else {
-            holder.binding.textStatusBadge.setText("VALID");
+            holder.binding.textStatusBadge.setText("VERIFIED HUB");
             holder.binding.textStatusBadge.setBackgroundResource(R.drawable.bg_badge_ok);
-            holder.binding.textStatusBadge.setTextColor(Color.parseColor("#2E7D32"));
-            holder.binding.textPrice.setTextColor(Color.parseColor("#17261A"));
+            holder.binding.textStatusBadge.setTextColor(Color.parseColor("#1E652E"));
+            holder.binding.textPrice.setTextColor(Color.parseColor("#1B7A2F"));
         }
 
         String formattedDate = dateFormat.format(new Date(report.dateMillis));
-        holder.binding.textReportMeta.setText(marketName + " · " + formattedDate);
+        holder.binding.textReportMeta.setText("Updated: " + formattedDate);
     }
 
     @Override

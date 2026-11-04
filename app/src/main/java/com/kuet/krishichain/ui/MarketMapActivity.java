@@ -341,8 +341,9 @@ public class MarketMapActivity extends AppCompatActivity {
                 currentPrice = price;
 
                 double qty = UserPreferences.getQuantity(app, 1000.0);
+                double prodCost = UserPreferences.getProductionCost(app, 20.0);
                 final RouteResult result = RouteCalculator.compute(
-                        snapshot, originId, destId, price, qty, rate, false);
+                        snapshot, originId, destId, price, qty, prodCost, rate, false);
 
                 runOnUiThread(() -> {
                     if (isDestroyed()) return;

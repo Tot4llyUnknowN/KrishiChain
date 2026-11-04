@@ -135,8 +135,9 @@ public class RankingActivity extends AppCompatActivity {
                         rate = info.spoilagePctPerHour;
                     }
                 }
+                double prodCost = com.kuet.krishichain.data.UserPreferences.getProductionCost(app, 20.0);
                 final RankingResult result =
-                        MarketRanker.rank(snapshot, prices, originId, qtyKg, rate);
+                        MarketRanker.rank(snapshot, prices, originId, qtyKg, prodCost, rate);
                 final int dummy = dao.dummyPriceCount();
                 runOnUiThread(() -> show(result, dummy));
             } catch (Exception e) {

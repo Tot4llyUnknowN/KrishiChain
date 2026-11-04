@@ -143,6 +143,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // 3b. Base Production Cost Text Field listener
+        binding.editProdCost.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!isSyncingSelection) {
+                    UserPreferences.setProductionCost(MainActivity.this, getProdCost());
+                }
+                updateRankingsAndProfits();
+            }
+        });
+
         // 4. Header Profile & Settings
         binding.buttonHeaderProfile.setOnClickListener(v -> showProfileDialog());
         binding.buttonHeaderSettings.setOnClickListener(v ->
@@ -187,6 +204,16 @@ public class MainActivity extends AppCompatActivity {
             return val > 0 ? val : 1000.0;
         } catch (Exception e) {
             return 1000.0;
+        }
+    }
+
+    private double getProdCost() {
+        String text = binding.editProdCost.getText().toString().trim();
+        try {
+            double val = Double.parseDouble(text);
+            return val > 0 ? val : 20.0;
+        } catch (Exception e) {
+            return 20.0;
         }
     }
 
@@ -246,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
         final String cropKey = (cropPos >= 0 && cropPos < CROP_KEYS.length) ? CROP_KEYS[cropPos] : "potato";
         final int originId = origin.id;
         final double qty = getQuantity();
+        final double prodCost = getProdCost();
         final Context app = getApplicationContext();
 
         AppDatabase.IO.execute(() -> {
@@ -259,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
                         rate = info.spoilagePctPerHour;
                     }
                 }
-                final RankingResult result = MarketRanker.rank(snapshot, prices, originId, qty, rate);
+                final RankingResult result = MarketRanker.rank(snapshot, prices, originId, qty, prodCost, rate);
                 runOnUiThread(() -> {
                     if (isDestroyed()) return;
                     displayRankings(result);
@@ -444,6 +472,13 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
         }
+
+        // Restore saved quantity and production cost
+        double savedQty = UserPreferences.getQuantity(this, 1000.0);
+        binding.editQuantity.setText(String.format(Locale.US, "%.0f", savedQty));
+        double savedProdCost = UserPreferences.getProductionCost(this, 20.0);
+        binding.editProdCost.setText(String.format(Locale.US, "%.1f", savedProdCost));
+
         isSyncingSelection = false;
 
         binding.textStatus.setText(getString(R.string.status_loaded, nodes, edges, prices));

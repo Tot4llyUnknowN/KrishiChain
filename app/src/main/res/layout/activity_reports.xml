@@ -60,7 +60,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/title_reports"
+            android:text="64 District Market Prices"
             android:textColor="@color/white"
             android:textSize="15sp"
             android:textStyle="bold" />
@@ -73,6 +73,37 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:padding="10dp">
+
+        <!-- Selected Crop Banner -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_farmer_banner"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:id="@+id/textCropHeader"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🥔 Showing Prices for Potato (64 Market Hubs)"
+                android:textColor="#144623"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textChangeCropHint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Active Crop"
+                android:textColor="#52705D"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <!-- Tabs (.tb) -->
         <LinearLayout
@@ -126,6 +157,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:layout_marginBottom="8dp"
+            android:visibility="gone"
             app:cardBackgroundColor="@color/alert_card_bg"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp"
@@ -158,32 +190,32 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Merge Sort & Filter Row (.row) -->
+        <!-- Sort Control Row: Sort by Price vs Sort by District -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="7dp"
+            android:layout_marginBottom="8dp"
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonMergeSort"
+                android:id="@+id/buttonSortPrice"
                 style="@style/Widget.KrishiChain.Button.OutlinedControl"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="42dp"
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
-                android:text="@string/button_mergesort"
-                android:textSize="12sp" />
+                android:text="Sort by Price (High → Low)"
+                android:textSize="11sp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonFilterOutliers"
+                android:id="@+id/buttonSortDistrict"
                 style="@style/Widget.KrishiChain.Button.OutlinedControl"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="42dp"
                 android:layout_marginStart="4dp"
                 android:layout_weight="1"
-                android:text="@string/button_outlier_filter"
-                android:textSize="12sp" />
+                android:text="Sort by District (A → Z)"
+                android:textSize="11sp" />
         </LinearLayout>
 
         <!-- Big Amber Report Price Button (.bt .a) -->

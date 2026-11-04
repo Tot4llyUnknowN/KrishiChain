@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 import com.kuet.krishichain.algo.OutlierFilter;
 import com.kuet.krishichain.algo.PriceReport;
 
@@ -159,7 +160,7 @@ public final class FirebaseRepository {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         return db.collection(COLLECTION_REPORTS)
                 .orderBy("dateMillis", Query.Direction.DESCENDING)
-                .limit(50)
+                .limit(300)
                 .addSnapshotListener((snapshots, error) -> {
                     if (error != null) {
                         callback.onError(error);
@@ -170,6 +171,73 @@ public final class FirebaseRepository {
                         callback.onSuccess(reports);
                     }
                 });
+    }
+
+    /**
+     * Seeds initial crowd-sourced market prices for all 64 districts in Firestore.
+     * Uses batch writes with deterministic document IDs so it is idempotent.
+     */
+    public static void seed64DistrictPrices(Context context, CompleteCallback callback) {
+        ensureAuth(new AuthCallback() {
+            @Override
+            public void onSuccess(String uid) {
+                AppDatabase.IO.execute(() -> {
+                    try {
+                        AppDatabase db = AppDatabase.get(context);
+                        List<PriceEntity> prices = db.networkDao().getAllPrices();
+                        if (prices == null || prices.isEmpty()) {
+                            NetworkLoader.loadIfNeeded(context);
+                            prices = db.networkDao().getAllPrices();
+                        }
+                        if (prices == null || prices.isEmpty()) {
+                            if (callback != null) callback.onError("No prices found to seed");
+                            return;
+                        }
+
+                        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+                        WriteBatch batch = firestore.batch();
+                        long now = System.currentTimeMillis();
+                        int count = 0;
+
+                        for (PriceEntity p : prices) {
+                            String docId = "district_" + p.nodeId + "_" + p.crop.toLowerCase(Locale.ROOT);
+                            com.google.firebase.firestore.DocumentReference ref =
+                                    firestore.collection(COLLECTION_REPORTS).document(docId);
+
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("crop", p.crop.toLowerCase(Locale.ROOT));
+                            data.put("price", p.price);
+                            data.put("nodeId", (long) p.nodeId);
+                            data.put("dateMillis", now - (count * 30000L));
+                            data.put("userId", uid);
+                            data.put("userEmail", "market_hub_" + p.nodeId + "@krishichain.bd");
+
+                            batch.set(ref, data);
+                            count++;
+                        }
+
+                        final int finalCount = count;
+                        batch.commit()
+                                .addOnSuccessListener(aVoid -> {
+                                    Log.i(TAG, "Successfully seeded " + finalCount + " prices to Firestore!");
+                                    if (callback != null) callback.onSuccess("Seeded " + finalCount + " district prices to Firebase!");
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Failed to commit seed batch: " + e.getMessage(), e);
+                                    if (callback != null) callback.onError("Seed failed: " + e.getMessage());
+                                });
+                    } catch (Exception e) {
+                        Log.e(TAG, "Exception during seed: " + e.getMessage(), e);
+                        if (callback != null) callback.onError("Error: " + e.getMessage());
+                    }
+                });
+            }
+
+            @Override
+            public void onError(Exception e) {
+                if (callback != null) callback.onError("Auth failed for seed: " + e.getMessage());
+            }
+        });
     }
 
     /** Parses Firestore document snapshots into PriceReport domain models. */

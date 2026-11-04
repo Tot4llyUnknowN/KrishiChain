@@ -249,51 +249,109 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Row 2: Quantity Text Field -->
+                    <!-- Row 2: Quantity and Production Cost Text Fields -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:orientation="vertical">
+                        android:orientation="horizontal">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="4dp"
-                            android:text="⚖️ QUANTITY (KG)"
-                            android:textColor="#4F6F59"
-                            android:textSize="10.5sp"
-                            android:textStyle="bold" />
-
+                        <!-- Quantity Column -->
                         <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="42dp"
-                            android:background="@drawable/bg_input_field"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingHorizontal="12dp">
-
-                            <EditText
-                                android:id="@+id/editQuantity"
-                                android:layout_width="0dp"
-                                android:layout_height="match_parent"
-                                android:layout_weight="1"
-                                android:background="@null"
-                                android:hint="e.g. 1000"
-                                android:imeOptions="actionDone"
-                                android:inputType="numberDecimal"
-                                android:text="1000"
-                                android:textColor="#142C1B"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="6dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="kg"
-                                android:textColor="#52705D"
-                                android:textSize="13sp"
+                                android:layout_marginBottom="4dp"
+                                android:text="⚖️ QUANTITY (KG)"
+                                android:textColor="#4F6F59"
+                                android:textSize="10.5sp"
                                 android:textStyle="bold" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="42dp"
+                                android:background="@drawable/bg_input_field"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingHorizontal="10dp">
+
+                                <EditText
+                                    android:id="@+id/editQuantity"
+                                    android:layout_width="0dp"
+                                    android:layout_height="match_parent"
+                                    android:layout_weight="1"
+                                    android:background="@null"
+                                    android:hint="1000"
+                                    android:imeOptions="actionNext"
+                                    android:inputType="numberDecimal"
+                                    android:text="1000"
+                                    android:textColor="#142C1B"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="kg"
+                                    android:textColor="#52705D"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- Base Production Cost Column -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="4dp"
+                                android:text="💰 PROD. COST"
+                                android:textColor="#4F6F59"
+                                android:textSize="10.5sp"
+                                android:textStyle="bold" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="42dp"
+                                android:background="@drawable/bg_input_field"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingHorizontal="10dp">
+
+                                <EditText
+                                    android:id="@+id/editProdCost"
+                                    android:layout_width="0dp"
+                                    android:layout_height="match_parent"
+                                    android:layout_weight="1"
+                                    android:background="@null"
+                                    android:hint="20.0"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="numberDecimal"
+                                    android:text="20.0"
+                                    android:textColor="#142C1B"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="৳/kg"
+                                    android:textColor="#52705D"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>

@@ -59,6 +59,9 @@ public interface NetworkDao {
     @Query("SELECT * FROM prices WHERE crop = :crop")
     List<PriceEntity> getPricesForCrop(String crop);
 
+    @Query("SELECT * FROM prices")
+    List<PriceEntity> getAllPrices();
+
     @Query("SELECT * FROM weather")
     List<WeatherEntity> getWeather();
 

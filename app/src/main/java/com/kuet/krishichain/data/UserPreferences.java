@@ -12,6 +12,7 @@ public final class UserPreferences {
     private static final String KEY_ORIGIN_ID = "selected_origin_id";
     private static final String KEY_CROP_KEY = "selected_crop_key";
     private static final String KEY_QUANTITY_KG = "selected_quantity_kg";
+    private static final String KEY_PROD_COST = "selected_production_cost_per_kg";
 
     private UserPreferences() {}
 
@@ -41,5 +42,13 @@ public final class UserPreferences {
 
     public static void setQuantity(Context context, double qty) {
         getPrefs(context).edit().putFloat(KEY_QUANTITY_KG, (float) qty).apply();
+    }
+
+    public static double getProductionCost(Context context, double defaultCost) {
+        return (double) getPrefs(context).getFloat(KEY_PROD_COST, (float) defaultCost);
+    }
+
+    public static void setProductionCost(Context context, double cost) {
+        getPrefs(context).edit().putFloat(KEY_PROD_COST, (float) cost).apply();
     }
 }
