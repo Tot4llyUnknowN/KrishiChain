@@ -1,25 +1,28 @@
 package com.kuet.krishichain.service;
 
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
 
 import com.kuet.krishichain.R;
+import com.kuet.krishichain.data.FirebaseRepository;
 import com.kuet.krishichain.data.NetworkLoader;
 import com.kuet.krishichain.data.WeatherRepository;
 import com.kuet.krishichain.provider.PriceContentProvider;
+import com.kuet.krishichain.ui.NotificationHelper;
 
 import java.util.Locale;
 import java.util.Map;
@@ -30,28 +33,39 @@ import java.util.concurrent.Executors;
 /**
  * Foreground "started" service. It refreshes the local database, fetches weather (falling back
  * to the cache when offline) and summarizes prices (read through the ContentProvider).
- * Part G2 adds Firebase price reports here.
  */
 public class SyncService extends Service {
     public static final String ACTION_SYNC_DONE = "com.kuet.krishichain.SYNC_DONE";
     public static final String EXTRA_SUMMARY = "summary";
 
     private static final String TAG = "KrishiChain";
-    private static final String CHANNEL_ID = "sync";
-    private static final int NOTIFICATION_ID = 1;
 
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private volatile boolean running = false;
 
+    private boolean isOnline(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) return false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Network network = cm.getActiveNetwork();
+            if (network == null) return false;
+            NetworkCapabilities caps = cm.getNetworkCapabilities(network);
+            return caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+        } else {
+            NetworkInfo active = cm.getActiveNetworkInfo();
+            return active != null && active.isConnected();
+        }
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Must call startForeground within a few seconds of startForegroundService().
-        Notification notification = buildNotification();
+        Notification notification = NotificationHelper.buildSyncingNotification(this);
         if (Build.VERSION.SDK_INT >= 29) {
-            startForeground(NOTIFICATION_ID, notification,
+            startForeground(NotificationHelper.NOTIF_ID_SYNC, notification,
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
         } else {
-            startForeground(NOTIFICATION_ID, notification);
+            startForeground(NotificationHelper.NOTIF_ID_SYNC, notification);
         }
 
         if (running) {
@@ -60,32 +74,50 @@ public class SyncService extends Service {
         running = true;
         worker.execute(() -> {
             String summary;
+            boolean online = false;
+            boolean syncSuccess = false;
+            Context app = getApplicationContext();
+
             try {
-                Context app = getApplicationContext();
+                online = isOnline(app);
                 NetworkLoader.loadIfNeeded(app);
+
                 String weather;
                 try {
                     WeatherRepository.refresh(app);
                     weather = getString(R.string.weather_ok);
+                    syncSuccess = true;
                 } catch (Exception e) {
                     Log.w(TAG, "Weather refresh failed: " + e.getMessage());
                     weather = getString(R.string.weather_fail);
                 }
+
                 String crowdSync = "";
                 try {
-                    int synced = com.kuet.krishichain.data.FirebaseRepository.syncCrowdPrices(app);
+                    int synced = FirebaseRepository.syncCrowdPrices(app);
                     if (synced > 0) {
                         crowdSync = " · " + synced + " crowd prices synced";
+                        syncSuccess = true;
                     }
                 } catch (Exception e) {
                     Log.w(TAG, "Firebase sync skipped or offline: " + e.getMessage());
                 }
-                summary = summarizePrices() + " · " + weather + crowdSync;
+
+                if (online || syncSuccess) {
+                    summary = summarizePrices() + " · " + weather + crowdSync;
+                    syncSuccess = true;
+                } else {
+                    summary = "Offline: using cached network and local prices";
+                    syncSuccess = false;
+                }
             } catch (Exception e) {
                 Log.e(TAG, "Sync failed", e);
                 summary = "Sync failed: " + e.getMessage();
+                syncSuccess = false;
             }
-            try { Thread.sleep(5000); } catch (InterruptedException ignored) { }
+
+            try { Thread.sleep(1500); } catch (InterruptedException ignored) { }
+
             Intent done = new Intent(ACTION_SYNC_DONE);
             done.setPackage(getPackageName()); // only our own app receives it
             done.putExtra(EXTRA_SUMMARY, summary);
@@ -93,6 +125,14 @@ public class SyncService extends Service {
 
             running = false;
             stopForeground(Service.STOP_FOREGROUND_REMOVE);
+
+            // Post completion notification to panel
+            if (online && syncSuccess) {
+                NotificationHelper.showSyncSuccessNotification(app, "Wholesale market prices and road network are up to date.");
+            } else {
+                NotificationHelper.showSyncFailedNotification(app, "No internet connection. Operating with cached offline data.");
+            }
+
             stopSelf();
         });
         return START_NOT_STICKY;
@@ -125,20 +165,6 @@ public class SyncService extends Service {
         return sb.toString();
     }
 
-    private Notification buildNotification() {
-        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= 26) {
-            nm.createNotificationChannel(new NotificationChannel(CHANNEL_ID,
-                    getString(R.string.sync_channel_name), NotificationManager.IMPORTANCE_LOW));
-        }
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.stat_notify_sync)
-                .setContentTitle(getString(R.string.sync_notif_title))
-                .setContentText(getString(R.string.sync_notif_text))
-                .setOngoing(true)
-                .build();
-    }
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -148,6 +174,5 @@ public class SyncService extends Service {
     @Override
     public void onDestroy() {
         worker.shutdown();
-        super.onDestroy();
     }
 }

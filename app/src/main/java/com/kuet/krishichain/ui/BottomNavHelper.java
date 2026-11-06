@@ -11,10 +11,10 @@ import android.widget.TextView;
 import com.kuet.krishichain.MainActivity;
 import com.kuet.krishichain.R;
 
-/** Fixed universal bottom navigation bar across all screens (Home, Map, Prices, More). */
+/** Fixed universal bottom navigation bar across all screens (Home, Prices, Map, More). */
 public final class BottomNavHelper {
     public enum Tab {
-        HOME(0), MAP(1), PRICES(2), MORE(3), NONE(-1);
+        HOME(0), PRICES(1), MAP(2), MORE(3), NONE(-1);
         public final int order;
         Tab(int order) { this.order = order; }
     }
@@ -31,6 +31,25 @@ public final class BottomNavHelper {
         View navPrices = root.findViewById(R.id.navPrices);
         View navMap = root.findViewById(R.id.navMap);
         View navMore = root.findViewById(R.id.navMore);
+
+        updateTabUI(root, currentTab);
+
+        if (activity instanceof MainActivity) {
+            MainActivity main = (MainActivity) activity;
+            if (navHome != null) navHome.setOnClickListener(v -> main.selectTab(Tab.HOME));
+            if (navPrices != null) navPrices.setOnClickListener(v -> main.selectTab(Tab.PRICES));
+            if (navMap != null) navMap.setOnClickListener(v -> main.selectTab(Tab.MAP));
+            if (navMore != null) navMore.setOnClickListener(v -> main.selectTab(Tab.MORE));
+        } else {
+            if (navHome != null) navHome.setOnClickListener(v -> launch(activity, Tab.HOME, currentTab));
+            if (navPrices != null) navPrices.setOnClickListener(v -> launch(activity, Tab.PRICES, currentTab));
+            if (navMap != null) navMap.setOnClickListener(v -> launch(activity, Tab.MAP, currentTab));
+            if (navMore != null) navMore.setOnClickListener(v -> launch(activity, Tab.MORE, currentTab));
+        }
+    }
+
+    public static void updateTabUI(View root, Tab currentTab) {
+        if (root == null) return;
 
         ImageView iconHome = root.findViewById(R.id.iconHome);
         ImageView iconPrices = root.findViewById(R.id.iconPrices);
@@ -51,35 +70,6 @@ public final class BottomNavHelper {
         setTabState(currentTab == Tab.PRICES, iconPrices, textPrices, indPrices);
         setTabState(currentTab == Tab.MAP, iconMap, textMap, indMap);
         setTabState(currentTab == Tab.MORE, iconMore, textMore, indMore);
-
-        if (navHome != null) {
-            navHome.setOnClickListener(v -> {
-                if (currentTab != Tab.HOME) {
-                    launch(activity, currentTab, Tab.HOME, MainActivity.class);
-                }
-            });
-        }
-        if (navPrices != null) {
-            navPrices.setOnClickListener(v -> {
-                if (currentTab != Tab.PRICES) {
-                    launch(activity, currentTab, Tab.PRICES, AllPricesActivity.class);
-                }
-            });
-        }
-        if (navMap != null) {
-            navMap.setOnClickListener(v -> {
-                if (currentTab != Tab.MAP) {
-                    launch(activity, currentTab, Tab.MAP, MarketMapActivity.class);
-                }
-            });
-        }
-        if (navMore != null) {
-            navMore.setOnClickListener(v -> {
-                if (currentTab != Tab.MORE) {
-                    launch(activity, currentTab, Tab.MORE, BenchmarkActivity.class);
-                }
-            });
-        }
     }
 
     private static void setTabState(boolean active, ImageView icon, TextView text, View indicator) {
@@ -95,16 +85,13 @@ public final class BottomNavHelper {
         }
     }
 
-    private static void launch(Activity activity, Tab currentTab, Tab targetTab, Class<?> targetClass) {
-        Intent intent = new Intent(activity, targetClass);
+    private static void launch(Activity activity, Tab targetTab, Tab currentTab) {
+        if (targetTab == currentTab) return;
+        Intent intent = new Intent(activity, MainActivity.class);
+        intent.putExtra("select_tab", targetTab.order);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         activity.startActivity(intent);
-        if (currentTab != Tab.NONE && targetTab != Tab.NONE) {
-            if (targetTab.order > currentTab.order) {
-                activity.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            } else {
-                activity.overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-            }
-        }
+        activity.overridePendingTransition(0, 0);
+        activity.finish();
     }
 }

@@ -22,9 +22,7 @@
         <item name="android:windowLightNavigationBar">true</item>
     </style>
 
-    <style name="Theme.KrishiChain" parent="Base.Theme.KrishiChain">
-        <item name="android:windowAnimationStyle">@style/FastSlideAnimation</item>
-    </style>
+    <style name="Theme.KrishiChain" parent="Base.Theme.KrishiChain" />
 
     <style name="FastSlideAnimation" parent="@android:style/Animation.Activity">
         <item name="android:activityOpenEnterAnimation">@anim/slide_in_right</item>

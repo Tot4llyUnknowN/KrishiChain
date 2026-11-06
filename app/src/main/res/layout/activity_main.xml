@@ -11,6 +11,19 @@
 
     <include layout="@layout/layout_top_status_bar" />
 
+    <ViewFlipper
+        android:id="@+id/viewFlipperTabs"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- Tab 0: Home Content -->
+        <LinearLayout
+            android:id="@+id/layoutHomeTab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
     <!-- Top App Header matching home.jpeg -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -997,6 +1010,24 @@
             </HorizontalScrollView>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+        </LinearLayout>
+
+        <!-- Tab 1: Prices Content -->
+        <include
+            android:id="@+id/tabPrices"
+            layout="@layout/tab_prices_content" />
+
+        <!-- Tab 2: Map Content -->
+        <include
+            android:id="@+id/tabMap"
+            layout="@layout/tab_map_content" />
+
+        <!-- Tab 3: More Content -->
+        <include
+            android:id="@+id/tabMore"
+            layout="@layout/tab_more_content" />
+
+    </ViewFlipper>
 
     <!-- Bottom Navigation Bar matching home.jpeg -->
     <include layout="@layout/layout_bottom_nav" />

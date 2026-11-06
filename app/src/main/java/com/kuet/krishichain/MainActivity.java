@@ -48,12 +48,16 @@ import com.kuet.krishichain.service.SyncService;
 import com.kuet.krishichain.ui.AllPricesActivity;
 import com.kuet.krishichain.ui.BenchmarkActivity;
 import com.kuet.krishichain.ui.BottomNavHelper;
+import com.kuet.krishichain.ui.NotificationHelper;
 import com.kuet.krishichain.ui.TopBarHelper;
 import com.kuet.krishichain.ui.HomeExtras;
 import com.kuet.krishichain.ui.PriceReportDialogHelper;
 import com.kuet.krishichain.ui.RankingActivity;
 import com.kuet.krishichain.ui.RouteActivity;
 import com.kuet.krishichain.ui.SearchableDistrictAdapter;
+import com.kuet.krishichain.ui.PricesTabHelper;
+import com.kuet.krishichain.ui.MapTabHelper;
+import com.kuet.krishichain.ui.MoreTabHelper;
 
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +71,11 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver syncDoneReceiver;
     private boolean receiversRegistered = false;
     private HomeExtras homeExtras;
+
+    private PricesTabHelper pricesTabHelper;
+    private MapTabHelper mapTabHelper;
+    private MoreTabHelper moreTabHelper;
+    private BottomNavHelper.Tab currentTab = BottomNavHelper.Tab.HOME;
 
     private RankedMarket topMarket = null;
     private boolean isSyncingSelection = false;
@@ -200,8 +209,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 4. Header Profile & Settings
         binding.buttonHeaderProfile.setOnClickListener(v -> showProfileDialog());
-        binding.buttonHeaderSettings.setOnClickListener(v ->
-                startActivity(new Intent(this, BenchmarkActivity.class)));
+        binding.buttonHeaderSettings.setOnClickListener(v -> selectTab(BottomNavHelper.Tab.MORE));
 
         // 5. Action Cards Row (4 actions matching home.jpeg)
         binding.cardActionFind.setOnClickListener(v -> onFindClicked());
@@ -222,13 +230,25 @@ public class MainActivity extends AppCompatActivity {
         // 7. Top Markets section "See All →"
         binding.buttonSeeAllMarkets.setOnClickListener(v -> onFindClicked());
 
-        // 8. Bottom Navigation
+        // 8. Bottom Navigation & Tab Helpers
         BottomNavHelper.setup(this, BottomNavHelper.Tab.HOME, binding.getRoot());
+
+        pricesTabHelper = new PricesTabHelper(this, binding.tabPrices);
+        pricesTabHelper.setup();
+
+        mapTabHelper = new MapTabHelper(this, binding.tabMap);
+        mapTabHelper.setup();
+
+        moreTabHelper = new MoreTabHelper(this, binding.tabMore);
+        moreTabHelper.setup();
 
         homeExtras = new HomeExtras(this);
         homeExtras.init();
 
+        handleIntent(getIntent());
+
         // Android 13+ runtime notification permission
+        NotificationHelper.initChannels(this);
         if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(
                 this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS);
@@ -531,7 +551,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        BottomNavHelper.setup(this, BottomNavHelper.Tab.HOME, binding.getRoot());
+        BottomNavHelper.updateTabUI(binding.getRoot(), currentTab);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         binding.getRoot().requestFocus();
         if (binding.editQuantity != null) {
@@ -548,7 +568,101 @@ public class MainActivity extends AppCompatActivity {
                 imm.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
             }
         }
-        syncPreferencesWithMapTab();
+        if (currentTab == BottomNavHelper.Tab.HOME) {
+            syncPreferencesWithMapTab();
+        } else if (currentTab == BottomNavHelper.Tab.MORE && moreTabHelper != null) {
+            moreTabHelper.updateAccountInfo();
+        }
+    }
+
+    public void selectTab(BottomNavHelper.Tab targetTab) {
+        if (targetTab == null || targetTab == currentTab) return;
+
+        int currentOrder = currentTab.order;
+        int targetOrder = targetTab.order;
+
+        if (targetOrder > currentOrder) {
+            // Left to right (Home -> Prices -> Map -> More)
+            binding.viewFlipperTabs.setInAnimation(this, R.anim.slide_in_right);
+            binding.viewFlipperTabs.setOutAnimation(this, R.anim.slide_out_left);
+        } else {
+            // Right to left (More -> Map -> Prices -> Home) in reverse direction
+            binding.viewFlipperTabs.setInAnimation(this, R.anim.slide_in_left);
+            binding.viewFlipperTabs.setOutAnimation(this, R.anim.slide_out_right);
+        }
+
+        binding.viewFlipperTabs.setDisplayedChild(targetOrder);
+        currentTab = targetTab;
+        BottomNavHelper.updateTabUI(binding.getRoot(), currentTab);
+
+        View currentFocus = getCurrentFocus();
+        if (currentFocus != null) {
+            android.view.inputmethod.InputMethodManager imm =
+                    (android.view.inputmethod.InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
+            }
+        }
+
+        if (targetTab == BottomNavHelper.Tab.PRICES && pricesTabHelper != null) {
+            pricesTabHelper.onTabSelected();
+        } else if (targetTab == BottomNavHelper.Tab.MAP && mapTabHelper != null) {
+            mapTabHelper.onTabSelected();
+        } else if (targetTab == BottomNavHelper.Tab.MORE && moreTabHelper != null) {
+            moreTabHelper.onTabSelected();
+        } else if (targetTab == BottomNavHelper.Tab.HOME) {
+            syncPreferencesWithMapTab();
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent == null) return;
+        if (intent.hasExtra("select_tab")) {
+            int tabOrder = intent.getIntExtra("select_tab", -1);
+            if (tabOrder >= 0) {
+                for (BottomNavHelper.Tab t : BottomNavHelper.Tab.values()) {
+                    if (t.order == tabOrder) {
+                        selectTab(t);
+                        break;
+                    }
+                }
+            } else {
+                String selectTabStr = intent.getStringExtra("select_tab");
+                if (selectTabStr != null) {
+                    try {
+                        selectTab(BottomNavHelper.Tab.valueOf(selectTabStr.toUpperCase(Locale.US)));
+                    } catch (Exception ignored) {}
+                }
+            }
+        }
+        String crop = intent.getStringExtra(AllPricesActivity.EXTRA_CROP);
+        if (crop != null && pricesTabHelper != null) {
+            pricesTabHelper.filterByCrop(crop);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (currentTab != BottomNavHelper.Tab.HOME) {
+            selectTab(BottomNavHelper.Tab.HOME);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (pricesTabHelper != null) {
+            pricesTabHelper.onDestroy();
+        }
+        super.onDestroy();
     }
 
     private void syncPreferencesWithMapTab() {
@@ -616,6 +730,9 @@ public class MainActivity extends AppCompatActivity {
                 new IntentFilter(SyncService.ACTION_SYNC_DONE),
                 ContextCompat.RECEIVER_NOT_EXPORTED);
         receiversRegistered = true;
+
+        // Automatically start sync on application startup
+        startSync();
     }
 
     @Override

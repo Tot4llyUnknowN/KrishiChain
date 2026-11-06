@@ -150,6 +150,13 @@ public class HomeExtras {
                 text = activity.getString(R.string.weather_real,
                         new SimpleDateFormat("HH:mm dd MMM", Locale.US).format(new Date(when)), max);
             }
+
+            final boolean isMonsoon = sim || (max >= 20.0);
+            if (isMonsoon) {
+                NotificationHelper.showMonsoonNotification(app);
+            } else {
+                NotificationHelper.cancelMonsoonNotification(app);
+            }
             final boolean simFinal = sim;
             activity.runOnUiThread(() -> {
                 if (activity.isDestroyed()) {
