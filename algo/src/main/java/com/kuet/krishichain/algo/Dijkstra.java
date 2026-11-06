@@ -14,12 +14,12 @@ public final class Dijkstra {
         return run(g, source, true);
     }
 
-    /** record = false skips the animation trace (used by benchmarks and Johnson). */
+    /** record = false skips the animation trace. */
     public static PathResult run(Graph g, int source, boolean record) {
         for (Edge e : g.allEdges()) {
             if (e.weight < 0) {
                 throw new IllegalArgumentException(
-                        "Dijkstra needs non-negative weights; use Bellman-Ford or Johnson.");
+                        "Dijkstra needs non-negative weights; use Bellman-Ford.");
             }
         }
         int n = g.size();

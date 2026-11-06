@@ -71,13 +71,16 @@ public class PriceReportDialogHelper {
             final int initialHubPos = selectedHubPos;
             if (context instanceof Activity) {
                 ((Activity) context).runOnUiThread(() -> {
-                    ArrayAdapter<String> hubAdapter = new ArrayAdapter<>(context,
-                            android.R.layout.simple_spinner_item, hubNames);
-                    hubAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    db.dialogSpinnerHub.setAdapter(hubAdapter);
+                    SearchableDistrictAdapter hubAdapter = new SearchableDistrictAdapter(context,
+                            android.R.layout.simple_dropdown_item_1line, hubNames);
+                    db.dialogAutoCompleteHub.setAdapter(hubAdapter);
                     if (initialHubPos < hubNames.size()) {
-                        db.dialogSpinnerHub.setSelection(initialHubPos);
+                        db.dialogAutoCompleteHub.setText(hubNames.get(initialHubPos), false);
                     }
+                    db.dialogAutoCompleteHub.setOnClickListener(v -> db.dialogAutoCompleteHub.showDropDown());
+                    db.dialogAutoCompleteHub.setOnFocusChangeListener((v, hasFocus) -> {
+                        if (hasFocus) db.dialogAutoCompleteHub.showDropDown();
+                    });
                 });
             }
 
@@ -97,9 +100,19 @@ public class PriceReportDialogHelper {
                     return;
                 }
 
-                int hubIdx = db.dialogSpinnerHub.getSelectedItemPosition();
-                if (hubIdx < 0 || hubIdx >= hubs.size()) return;
-                int nodeId = hubs.get(hubIdx).id;
+                String enteredHub = db.dialogAutoCompleteHub.getText().toString().trim();
+                int foundId = -1;
+                for (NodeEntity n : hubs) {
+                    if (n.name.equalsIgnoreCase(enteredHub)) {
+                        foundId = n.id;
+                        break;
+                    }
+                }
+                if (foundId == -1) {
+                    db.dialogAutoCompleteHub.setError("Select a valid district");
+                    return;
+                }
+                final int nodeId = foundId;
 
                 String crop = db.dialogSpinnerCrop.getSelectedItem().toString().toLowerCase(Locale.ROOT);
                 if (crop.contains("potato")) crop = "potato";

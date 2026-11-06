@@ -95,49 +95,74 @@
                     android:textColor="@color/ink"
                     android:textSize="10.5sp" />
 
-                <TextView
-                    android:id="@+id/tabFloyd"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="5dp"
-                    android:background="@drawable/bg_tab_off"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
-                    android:text="Floyd"
-                    android:textColor="@color/ink"
-                    android:textSize="10.5sp" />
-
-                <TextView
-                    android:id="@+id/tabJohnson"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_tab_off"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
-                    android:text="Johnson"
-                    android:textColor="@color/ink"
-                    android:textSize="10.5sp" />
             </LinearLayout>
         </HorizontalScrollView>
 
-        <!-- Light Canvas Container -->
-        <FrameLayout
+        <!-- Source Node Selector Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSource"
+            style="@style/Widget.KrishiChain.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Source Node:"
+                    android:textColor="@color/ink"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_spinner_dropdown">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/autoCompleteSource"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@null"
+                        android:completionThreshold="1"
+                        android:dropDownHeight="260dp"
+                        android:gravity="center_vertical"
+                        android:hint="Type or select district"
+                        android:imeOptions="actionDone"
+                        android:inputType="textCapWords|textNoSuggestions"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="26dp"
+                        android:selectAllOnFocus="true"
+                        android:singleLine="true"
+                        android:textColor="#144623"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Network Graph Visualizer Container -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.KrishiChain.Card"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginBottom="7dp"
-            android:layout_weight="1"
-            android:background="@drawable/bg_light_canvas"
-            android:padding="4dp">
+            android:layout_weight="1">
 
             <com.kuet.krishichain.ui.GraphView
                 android:id="@+id/graphView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
-        </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Checklist Items (.ck) -->
         <LinearLayout
@@ -306,31 +331,6 @@
                 android:text="@string/button_end"
                 android:textSize="10sp" />
         </LinearLayout>
-
-        <!-- Hidden / Compatibility Spinners -->
-        <Spinner
-            android:id="@+id/spinnerAlgo"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
-
-        <Spinner
-            android:id="@+id/spinnerSource"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
-
-        <Spinner
-            android:id="@+id/spinnerDest"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/textInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
 
     </LinearLayout>
 

@@ -155,13 +155,8 @@
     <string name="button_sync">Sync now</string>
     <string name="button_benchmark">Benchmark</string>
 
-    <!-- Settings & Benchmark -->
-    <string name="bm_title">Settings &amp; Benchmark</string>
-    <string name="floyd_vs_johnson">Floyd vs Johnson</string>
-    <string name="bm_note">Illustrative ms. Run the real benchmark on device.</string>
-    <string name="button_bm_run">Run device benchmark</string>
-    <string name="bm_running">Running…</string>
-    <string name="bm_done">Done. Real device APSP benchmark complete.</string>
+    <!-- Settings & Tools -->
+    <string name="bm_title">Settings &amp; Tools</string>
     <string name="language">Language</string>
     <string name="lang_bn">বাংলা</string>
     <string name="lang_en">English</string>

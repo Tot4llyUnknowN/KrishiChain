@@ -22,7 +22,16 @@
         <item name="android:windowLightNavigationBar">true</item>
     </style>
 
-    <style name="Theme.KrishiChain" parent="Base.Theme.KrishiChain" />
+    <style name="Theme.KrishiChain" parent="Base.Theme.KrishiChain">
+        <item name="android:windowAnimationStyle">@style/FastSlideAnimation</item>
+    </style>
+
+    <style name="FastSlideAnimation" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/slide_in_right</item>
+        <item name="android:activityOpenExitAnimation">@anim/slide_out_left</item>
+        <item name="android:activityCloseEnterAnimation">@anim/slide_in_left</item>
+        <item name="android:activityCloseExitAnimation">@anim/slide_out_right</item>
+    </style>
 
     <!-- Mockup Card Style (.cd) -->
     <style name="Widget.KrishiChain.Card" parent="Widget.Material3.CardView.Elevated">

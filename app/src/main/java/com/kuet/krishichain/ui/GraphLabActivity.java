@@ -3,9 +3,9 @@ package com.kuet.krishichain.ui;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -17,36 +17,29 @@ import androidx.core.view.WindowInsetsCompat;
 import com.kuet.krishichain.R;
 import com.kuet.krishichain.algo.BellmanFord;
 import com.kuet.krishichain.algo.Dijkstra;
-import com.kuet.krishichain.algo.FloydWarshall;
-import com.kuet.krishichain.algo.Johnson;
-import com.kuet.krishichain.algo.Kruskal;
-import com.kuet.krishichain.algo.MstResult;
 import com.kuet.krishichain.algo.PathResult;
-import com.kuet.krishichain.algo.Prim;
 import com.kuet.krishichain.algo.Step;
 import com.kuet.krishichain.data.AppDatabase;
-import com.kuet.krishichain.data.EdgeEntity;
 import com.kuet.krishichain.data.NetworkDao;
 import com.kuet.krishichain.data.NetworkLoader;
 import com.kuet.krishichain.data.NodeEntity;
+import com.kuet.krishichain.data.UserPreferences;
 import com.kuet.krishichain.databinding.ActivityGraphLabBinding;
 import com.kuet.krishichain.domain.NetworkSnapshot;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public class GraphLabActivity extends AppCompatActivity {
     private static final int ALGO_DIJKSTRA = 0;
     private static final int ALGO_BELLMAN = 1;
-    private static final int ALGO_FLOYD = 2;
-    private static final int ALGO_JOHNSON = 3;
 
     private ActivityGraphLabBinding binding;
     private NetworkSnapshot snap;
     private int currentAlgo = ALGO_DIJKSTRA;
+    private int selectedSourceIndex = 0;
+    private final List<String> districtNames = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,20 +55,15 @@ public class GraphLabActivity extends AppCompatActivity {
         });
 
         binding.buttonBack.setOnClickListener(v -> finish());
-        binding.graphView.setDarkCanvas(true);
+        binding.graphView.setDarkCanvas(false);
 
         binding.tabDijkstra.setOnClickListener(v -> selectAlgo(ALGO_DIJKSTRA));
         binding.tabBellman.setOnClickListener(v -> selectAlgo(ALGO_BELLMAN));
-        binding.tabFloyd.setOnClickListener(v -> selectAlgo(ALGO_FLOYD));
-        binding.tabJohnson.setOnClickListener(v -> selectAlgo(ALGO_JOHNSON));
 
         binding.graphView.setListener(new GraphView.Listener() {
             @Override
             public void onNodeTapped(int index) {
-                if (binding.spinnerSource != null && binding.spinnerSource.getAdapter() != null) {
-                    binding.spinnerSource.setSelection(index);
-                    run();
-                }
+                selectSource(index);
             }
 
             @Override
@@ -112,12 +100,16 @@ public class GraphLabActivity extends AppCompatActivity {
         loadNetwork();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        TopBarHelper.setup(this, binding.getRoot());
+    }
+
     private void selectAlgo(int algo) {
         currentAlgo = algo;
         updateTab(binding.tabDijkstra, algo == ALGO_DIJKSTRA);
         updateTab(binding.tabBellman, algo == ALGO_BELLMAN);
-        updateTab(binding.tabFloyd, algo == ALGO_FLOYD);
-        updateTab(binding.tabJohnson, algo == ALGO_JOHNSON);
         run();
     }
 
@@ -150,103 +142,126 @@ public class GraphLabActivity extends AppCompatActivity {
 
     private void onNetworkReady(NetworkSnapshot s) {
         snap = s;
-        int n = s.nodes.size();
-        String[] names = new String[n];
-        String[] types = new String[n];
-        double[] lat = new double[n];
-        double[] lon = new double[n];
-        for (int i = 0; i < n; i++) {
-            NodeEntity node = s.nodes.get(i);
-            names[i] = node.name;
-            types[i] = node.type;
-            lat[i] = node.lat;
-            lon[i] = node.lon;
+        GraphBinder.bind(binding.graphView, s);
+
+        districtNames.clear();
+        for (NodeEntity node : s.nodes) {
+            districtNames.add(node.name);
         }
 
-        List<int[]> pairList = new ArrayList<>();
-        Set<Long> seen = new HashSet<>();
-        for (EdgeEntity e : s.edges()) {
-            Integer u = s.idToIndex.get(e.fromId);
-            Integer v = s.idToIndex.get(e.toId);
-            if (u == null || v == null) continue;
-            long k = Math.min(u, v) * 1000L + Math.max(u, v);
-            if (seen.add(k)) {
-                pairList.add(new int[]{u, v});
+        int savedOriginId = UserPreferences.getOriginId(this, 1);
+        selectedSourceIndex = 0;
+        for (int i = 0; i < s.nodes.size(); i++) {
+            if (s.nodes.get(i).id == savedOriginId) {
+                selectedSourceIndex = i;
+                break;
             }
         }
-        binding.graphView.setNetwork(names, types, lat, lon, pairList.toArray(new int[0][]));
 
-        ArrayAdapter<NodeEntity> sourceAdapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_item, s.nodes);
-        binding.spinnerSource.setAdapter(sourceAdapter);
+        SearchableDistrictAdapter adapter = new SearchableDistrictAdapter(
+                this, android.R.layout.simple_dropdown_item_1line, districtNames);
+        binding.autoCompleteSource.setAdapter(adapter);
+        binding.autoCompleteSource.setText(districtNames.get(selectedSourceIndex), false);
 
-        List<String> destNames = new ArrayList<>();
-        destNames.add(getString(R.string.lab_none));
-        destNames.addAll(java.util.Arrays.asList(names));
-        ArrayAdapter<String> destAdapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_item, destNames);
-        binding.spinnerDest.setAdapter(destAdapter);
+        binding.autoCompleteSource.setOnClickListener(v -> {
+            binding.autoCompleteSource.selectAll();
+            binding.autoCompleteSource.showDropDown();
+        });
+        binding.autoCompleteSource.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                binding.autoCompleteSource.selectAll();
+                binding.autoCompleteSource.showDropDown();
+            }
+        });
+        binding.autoCompleteSource.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedName = (String) parent.getItemAtPosition(position);
+            int idx = districtNames.indexOf(selectedName);
+            if (idx >= 0) {
+                selectSource(idx);
+            }
+        });
+        binding.autoCompleteSource.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s == null) return;
+                String val = s.toString().trim();
+                for (int i = 0; i < districtNames.size(); i++) {
+                    if (districtNames.get(i).equalsIgnoreCase(val)) {
+                        if (selectedSourceIndex != i) {
+                            selectSource(i);
+                        }
+                        break;
+                    }
+                }
+            }
+        });
 
-        if (n > 2) {
-            binding.spinnerDest.setSelection(3); // Pick Dhaka or a default market
-        }
+        run();
+    }
 
+    private void selectSource(int index) {
+        if (snap == null || index < 0 || index >= snap.nodes.size()) return;
+        selectedSourceIndex = index;
+        binding.autoCompleteSource.setText(districtNames.get(index), false);
+        UserPreferences.setOriginId(this, snap.nodes.get(index).id);
         run();
     }
 
     private void run() {
         if (snap == null) return;
-        int src = binding.spinnerSource.getSelectedItemPosition();
-        if (src < 0) src = 0;
-        int dst = binding.spinnerDest.getSelectedItemPosition() - 1;
-        if (dst < 0 && snap.nodes.size() > 2) dst = 2; // Default destination
+        int src = selectedSourceIndex;
+        if (src < 0 || src >= snap.nodes.size()) src = 0;
 
         List<Step> steps = new ArrayList<>();
         boolean showDist = true;
         int start = src;
         List<Integer> cycle = new ArrayList<>();
 
-        String algoName = "Dijkstra";
-        double cost = 0;
-        String fromName = snap.nodes.get(src).name;
-        String toName = dst >= 0 && dst < snap.nodes.size() ? snap.nodes.get(dst).name : "Dhaka";
-
+        String algoName;
+        PathResult r;
         switch (currentAlgo) {
-            case ALGO_DIJKSTRA: {
+            case ALGO_DIJKSTRA:
                 algoName = "Dijkstra";
-                PathResult r = Dijkstra.run(snap.buildGraph(false), src);
+                r = Dijkstra.run(snap.buildGraph(false), src);
                 steps = r.steps;
-                cost = dst >= 0 && dst < r.dist.length ? r.dist[dst] : 4.0;
                 break;
-            }
-            case ALGO_BELLMAN: {
+            case ALGO_BELLMAN:
+            default:
                 algoName = "Bellman-Ford";
-                PathResult r = BellmanFord.run(snap.buildNetGraph(false), src);
+                r = BellmanFord.run(snap.buildNetGraph(false), src);
                 steps = r.steps;
-                cost = dst >= 0 && dst < r.dist.length ? r.dist[dst] : 4.0;
                 break;
-            }
-            case ALGO_FLOYD: {
-                algoName = "Floyd-Warshall";
-                PathResult r = Dijkstra.run(snap.buildGraph(false), src);
-                steps = r.steps;
-                cost = dst >= 0 && dst < r.dist.length ? r.dist[dst] : 4.0;
-                break;
-            }
-            case ALGO_JOHNSON: {
-                algoName = "Johnson";
-                PathResult r = Dijkstra.run(snap.buildGraph(false), src);
-                steps = r.steps;
-                cost = dst >= 0 && dst < r.dist.length ? r.dist[dst] : 4.0;
-                break;
-            }
         }
 
-        binding.textCheck1.setText("Running " + algoName + "…");
-        binding.textCheck2.setText("Shortest path: " + fromName + " → " + toName);
-        binding.textCheck3.setText(String.format(Locale.US, "Cost: %.1f", cost > 0 ? cost : 4.0));
+        int reachedCount = 0;
+        double maxDist = 0;
+        String farthestNode = "";
+        double totalDist = 0;
 
-        binding.graphView.setMarkers(src, dst);
+        for (int i = 0; i < snap.nodes.size(); i++) {
+            double d = r.dist[i];
+            if (d < Double.POSITIVE_INFINITY) {
+                reachedCount++;
+                totalDist += d;
+                if (d > maxDist) {
+                    maxDist = d;
+                    farthestNode = snap.nodes.get(i).name;
+                }
+            }
+        }
+        double avgDist = reachedCount > 1 ? totalDist / (reachedCount - 1) : 0;
+        String fromName = snap.nodes.get(src).name;
+
+        binding.textCheck1.setText("Running " + algoName + " (Single-Source Shortest Paths)…");
+        binding.textCheck2.setText("Source: " + fromName + " → Shortest paths to all " + reachedCount + " districts");
+        binding.textCheck3.setText(String.format(Locale.US, "Max: %.0f ৳ (%s) • Avg: %.0f ৳",
+                maxDist, farthestNode, avgDist));
+
+        binding.graphView.setMarkers(src, -1);
         binding.graphView.loadSteps(steps, showDist, start, cycle);
         binding.graphView.play();
     }

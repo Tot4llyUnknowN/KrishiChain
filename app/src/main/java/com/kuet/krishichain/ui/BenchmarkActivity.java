@@ -1,12 +1,10 @@
 package com.kuet.krishichain.ui;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -16,28 +14,14 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseUser;
-import com.kuet.krishichain.R;
 import com.kuet.krishichain.SplashActivity;
-import com.kuet.krishichain.algo.AllPairsResult;
-import com.kuet.krishichain.algo.FloydWarshall;
-import com.kuet.krishichain.algo.Graph;
-import com.kuet.krishichain.algo.GraphGenerator;
-import com.kuet.krishichain.algo.Johnson;
-import com.kuet.krishichain.data.AppDatabase;
 import com.kuet.krishichain.data.FirebaseRepository;
-import com.kuet.krishichain.data.NetworkLoader;
 import com.kuet.krishichain.databinding.ActivityBenchmarkBinding;
 import com.kuet.krishichain.databinding.DialogChangePasswordBinding;
-import com.kuet.krishichain.domain.NetworkSnapshot;
-
-import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class BenchmarkActivity extends AppCompatActivity {
 
     private ActivityBenchmarkBinding binding;
-    private final ExecutorService worker = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,11 +39,14 @@ public class BenchmarkActivity extends AppCompatActivity {
         binding.buttonBack.setOnClickListener(v -> finish());
         BottomNavHelper.setup(this, BottomNavHelper.Tab.MORE, binding.getRoot());
         TopBarHelper.setup(this, binding.getRoot());
-        binding.buttonBenchmark.setOnClickListener(v -> start());
 
         // Bottleneck Analyzer entry point
         binding.cardBottleneckAnalyzer.setOnClickListener(v ->
                 startActivity(new Intent(this, BottleneckActivity.class)));
+
+        // Graph Lab Visualizer entry point
+        binding.cardGraphLab.setOnClickListener(v ->
+                startActivity(new Intent(this, GraphLabActivity.class)));
 
         // Account management
         updateAccountInfo();
@@ -185,72 +172,5 @@ public class BenchmarkActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-    }
-
-    private void start() {
-        binding.buttonBenchmark.setEnabled(false);
-        binding.progress.setVisibility(View.VISIBLE);
-        final Context app = getApplicationContext();
-
-        worker.execute(() -> {
-            try {
-                measure(GraphGenerator.random(40, 150, true, 1), 2); // JIT warm-up
-
-                NetworkLoader.loadIfNeeded(app);
-                NetworkSnapshot snap = NetworkSnapshot.load(AppDatabase.get(app).networkDao());
-                Graph real = snap.buildNetGraph(false);
-                double[] realTiming = measure(real, 10);
-
-                Graph sparse = GraphGenerator.random(100, 300, true, 5);
-                double[] sparseTiming = measure(sparse, 3);
-
-                Graph dense = GraphGenerator.random(80, 800, true, 5);
-                double[] denseTiming = measure(dense, 3);
-
-                runOnUiThread(() -> {
-                    if (isDestroyed()) return;
-                    binding.textFloydReal.setText(String.format(Locale.US, "%.1f", realTiming[0]));
-                    binding.textJohnsonReal.setText(String.format(Locale.US, "%.1f", realTiming[1]));
-
-                    binding.textFloydSparse.setText(String.format(Locale.US, "%.1f", sparseTiming[0]));
-                    binding.textJohnsonSparse.setText(String.format(Locale.US, "%.1f", sparseTiming[1]));
-
-                    binding.textFloydDense.setText(String.format(Locale.US, "%.1f", denseTiming[0]));
-                    binding.textJohnsonDense.setText(String.format(Locale.US, "%.1f", denseTiming[1]));
-
-                    binding.progress.setVisibility(View.GONE);
-                    binding.buttonBenchmark.setEnabled(true);
-                    Toast.makeText(BenchmarkActivity.this, "Benchmark completed on device!", Toast.LENGTH_SHORT).show();
-                });
-            } catch (Exception e) {
-                runOnUiThread(() -> {
-                    if (isDestroyed()) return;
-                    binding.progress.setVisibility(View.GONE);
-                    binding.buttonBenchmark.setEnabled(true);
-                    Toast.makeText(BenchmarkActivity.this, "Benchmark error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
-            }
-        });
-    }
-
-    private static double[] measure(Graph g, int reps) {
-        double bestF = Double.MAX_VALUE;
-        double bestJ = Double.MAX_VALUE;
-        for (int i = 0; i < reps; i++) {
-            long t0 = System.nanoTime();
-            FloydWarshall.run(g);
-            long t1 = System.nanoTime();
-            Johnson.run(g);
-            long t2 = System.nanoTime();
-            bestF = Math.min(bestF, (t1 - t0) / 1e6);
-            bestJ = Math.min(bestJ, (t2 - t1) / 1e6);
-        }
-        return new double[]{bestF, bestJ};
-    }
-
-    @Override
-    protected void onDestroy() {
-        worker.shutdownNow();
-        super.onDestroy();
     }
 }

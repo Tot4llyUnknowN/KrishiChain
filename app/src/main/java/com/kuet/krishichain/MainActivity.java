@@ -49,12 +49,11 @@ import com.kuet.krishichain.ui.AllPricesActivity;
 import com.kuet.krishichain.ui.BenchmarkActivity;
 import com.kuet.krishichain.ui.BottomNavHelper;
 import com.kuet.krishichain.ui.TopBarHelper;
-import com.kuet.krishichain.ui.GraphLabActivity;
 import com.kuet.krishichain.ui.HomeExtras;
-import com.kuet.krishichain.ui.PlannerActivity;
 import com.kuet.krishichain.ui.PriceReportDialogHelper;
 import com.kuet.krishichain.ui.RankingActivity;
 import com.kuet.krishichain.ui.RouteActivity;
+import com.kuet.krishichain.ui.SearchableDistrictAdapter;
 
 import java.util.List;
 import java.util.Locale;
@@ -71,6 +70,30 @@ public class MainActivity extends AppCompatActivity {
 
     private RankedMarket topMarket = null;
     private boolean isSyncingSelection = false;
+    private final java.util.List<NodeEntity> originNodes = new java.util.ArrayList<>();
+    private NodeEntity selectedOriginNode = null;
+
+    private NodeEntity getSelectedOrigin() {
+        if (selectedOriginNode != null) return selectedOriginNode;
+        if (!originNodes.isEmpty()) return originNodes.get(0);
+        return null;
+    }
+
+    private void selectOriginByName(String name, boolean updateText) {
+        for (NodeEntity n : originNodes) {
+            if (n.name.equalsIgnoreCase(name)) {
+                selectedOriginNode = n;
+                if (updateText && binding != null) {
+                    binding.autoCompleteOrigin.setText(n.name, false);
+                }
+                if (!isSyncingSelection) {
+                    UserPreferences.setOriginId(MainActivity.this, n.id);
+                }
+                updateRankingsAndProfits();
+                break;
+            }
+        }
+    }
 
     private final ActivityResultLauncher<String> notificationPermission =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
@@ -110,19 +133,35 @@ public class MainActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        // 2. Origin Dropdown Spinner listener
-        binding.spinnerOrigin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                NodeEntity selected = (NodeEntity) binding.spinnerOrigin.getSelectedItem();
-                if (!isSyncingSelection && selected != null) {
-                    UserPreferences.setOriginId(MainActivity.this, selected.id);
-                }
-                updateRankingsAndProfits();
+        // 2. Origin Searchable Dropdown / Type-to-search listener
+        binding.autoCompleteOrigin.setOnClickListener(v -> binding.autoCompleteOrigin.showDropDown());
+        binding.autoCompleteOrigin.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                binding.autoCompleteOrigin.showDropDown();
             }
-
+        });
+        binding.autoCompleteOrigin.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedName = (String) parent.getItemAtPosition(position);
+            selectOriginByName(selectedName, true);
+        });
+        binding.autoCompleteOrigin.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s == null) return;
+                String val = s.toString().trim();
+                for (NodeEntity n : originNodes) {
+                    if (n.name.equalsIgnoreCase(val)) {
+                        if (selectedOriginNode == null || selectedOriginNode.id != n.id) {
+                            selectOriginByName(n.name, false);
+                        }
+                        break;
+                    }
+                }
+            }
         });
 
         // 3. Quantity Text Field listener
@@ -176,16 +215,6 @@ public class MainActivity extends AppCompatActivity {
         });
         binding.cardActionWeather.setOnClickListener(v -> toggleWeatherSimulation());
 
-        // Quick Report Price Banner on Homepage
-        binding.bannerReportPriceHome.setOnClickListener(v -> {
-            int cropPos = binding.spinnerCrop.getSelectedItemPosition();
-            String cropKey = (cropPos >= 0 && cropPos < CROP_KEYS.length) ? CROP_KEYS[cropPos] : "potato";
-            NodeEntity origin = (NodeEntity) binding.spinnerOrigin.getSelectedItem();
-            Integer originId = origin != null ? origin.id : null;
-            PriceReportDialogHelper.show(this, cropKey, originId, (crop, price, nodeId) -> {
-                updateRankingsAndProfits();
-            });
-        });
 
         // 6. See Details on Estimated Profit card
         binding.buttonSeeDetails.setOnClickListener(v -> openDefaultRoute());
@@ -234,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        NodeEntity origin = (NodeEntity) binding.spinnerOrigin.getSelectedItem();
+        NodeEntity origin = getSelectedOrigin();
         int originId = origin != null ? origin.id : 0;
         String originName = origin != null ? origin.name : "Khulna";
 
@@ -256,7 +285,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void openRouteFor(RankedMarket rm) {
         if (rm == null) return;
-        NodeEntity origin = (NodeEntity) binding.spinnerOrigin.getSelectedItem();
+        NodeEntity origin = getSelectedOrigin();
         int originId = origin != null ? origin.id : 0;
         String originName = origin != null ? origin.name : "Origin";
 
@@ -277,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateRankingsAndProfits() {
-        NodeEntity origin = (NodeEntity) binding.spinnerOrigin.getSelectedItem();
+        NodeEntity origin = getSelectedOrigin();
         if (origin == null) return;
 
         int cropPos = binding.spinnerCrop.getSelectedItemPosition();
@@ -318,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
         // Estimated profit
         if (result.allocation != null && result.allocation.isSplit) {
             binding.textEstimatedProfit.setText(String.format(Locale.US, "৳ %,d", Math.round(result.allocation.combinedNetProfit)));
-            binding.textProfitGain.setText("⚡ Flow Split: " + result.allocation.getSummary());
+            binding.textProfitGain.setText("Flow Split: " + result.allocation.getSummary());
         } else {
             binding.textEstimatedProfit.setText(String.format(Locale.US, "৳ %,d", Math.round(best.option.netProfit)));
 
@@ -434,18 +463,25 @@ public class MainActivity extends AppCompatActivity {
     private void showData(List<NodeEntity> origins, int nodes, int edges, int prices, int dummy) {
         if (isDestroyed()) return;
         isSyncingSelection = true;
-        ArrayAdapter<NodeEntity> originAdapter = new ArrayAdapter<>(
-                this, R.layout.item_spinner_selected, origins);
-        originAdapter.setDropDownViewResource(R.layout.item_spinner_dropdown);
-        binding.spinnerOrigin.setAdapter(originAdapter);
+        originNodes.clear();
+        originNodes.addAll(origins);
 
-        // Select the saved origin from UserPreferences
+        java.util.List<String> names = new java.util.ArrayList<>();
         int savedOriginId = UserPreferences.getOriginId(this, 1);
+        int initialIdx = 0;
         for (int i = 0; i < origins.size(); i++) {
+            names.add(origins.get(i).name);
             if (origins.get(i).id == savedOriginId) {
-                binding.spinnerOrigin.setSelection(i);
-                break;
+                initialIdx = i;
             }
+        }
+        SearchableDistrictAdapter originAdapter = new SearchableDistrictAdapter(
+                this, android.R.layout.simple_dropdown_item_1line, names);
+        binding.autoCompleteOrigin.setAdapter(originAdapter);
+
+        if (!origins.isEmpty()) {
+            selectedOriginNode = origins.get(initialIdx);
+            binding.autoCompleteOrigin.setText(selectedOriginNode.name, false);
         }
 
         // Also select saved crop from UserPreferences
@@ -475,7 +511,7 @@ public class MainActivity extends AppCompatActivity {
             binding.editQuantity.setError(getString(R.string.error_quantity));
             return;
         }
-        NodeEntity origin = (NodeEntity) binding.spinnerOrigin.getSelectedItem();
+        NodeEntity origin = getSelectedOrigin();
         if (origin == null) return;
 
         int cropPos = binding.spinnerCrop.getSelectedItemPosition();
@@ -516,19 +552,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void syncPreferencesWithMapTab() {
-        if (binding.spinnerOrigin.getAdapter() == null) return;
+        if (originNodes.isEmpty() || binding == null) return;
         int savedOriginId = UserPreferences.getOriginId(this, 1);
         String savedCropKey = UserPreferences.getCropKey(this, "potato");
 
         boolean changed = false;
         isSyncingSelection = true;
 
-        NodeEntity currentOrigin = (NodeEntity) binding.spinnerOrigin.getSelectedItem();
-        if (currentOrigin == null || currentOrigin.id != savedOriginId) {
-            for (int i = 0; i < binding.spinnerOrigin.getCount(); i++) {
-                NodeEntity n = (NodeEntity) binding.spinnerOrigin.getItemAtPosition(i);
-                if (n != null && n.id == savedOriginId) {
-                    binding.spinnerOrigin.setSelection(i);
+        if (selectedOriginNode == null || selectedOriginNode.id != savedOriginId) {
+            for (NodeEntity n : originNodes) {
+                if (n.id == savedOriginId) {
+                    selectedOriginNode = n;
+                    binding.autoCompleteOrigin.setText(n.name, false);
                     changed = true;
                     break;
                 }

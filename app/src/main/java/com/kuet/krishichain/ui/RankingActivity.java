@@ -189,7 +189,7 @@ public class RankingActivity extends AppCompatActivity {
                     "Flow Profit: ৳ %,d (Split across %d markets)",
                     Math.round(result.allocation.combinedNetProfit), result.allocation.items.size()));
             binding.textInsight.setVisibility(View.VISIBLE);
-            binding.textInsight.setText("⚡ Supply-Demand Flow: " + result.allocation.getSummary());
+            binding.textInsight.setText("Supply-Demand Flow: " + result.allocation.getSummary());
         } else {
             double perKg = qtyKg > 0 ? (best.option.netProfit / qtyKg) : best.option.netProfit;
             binding.textTopMarketProfit.setText(String.format(Locale.US, "Net profit ৳ %.2f/kg", perKg));

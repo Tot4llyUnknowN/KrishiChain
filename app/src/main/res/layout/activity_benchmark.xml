@@ -34,7 +34,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/bm_title"
+            android:text="Settings &amp; Tools"
             android:textColor="@color/white"
             android:textSize="15sp"
             android:textStyle="bold" />
@@ -51,287 +51,110 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:padding="12dp">
 
-            <!-- Section 1: Floyd vs Johnson Heading -->
+            <!-- Section: Network & Logistics Tools -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="7dp"
-                android:text="@string/floyd_vs_johnson"
+                android:text="Network &amp; Logistics Tools"
                 android:textColor="@color/ink"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
-            <!-- Benchmark Table Card (.cd style="padding:2px 4px") -->
-            <com.google.android.material.card.MaterialCardView
-                style="@style/Widget.KrishiChain.Card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="6dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="8dp">
-
-                    <!-- Table Header -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingBottom="5dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1.2"
-                            android:text="Graph"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="end"
-                            android:text="Floyd (ms)"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="end"
-                            android:text="Johnson (ms)"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginBottom="5dp"
-                        android:background="@color/line" />
-
-                    <!-- Row 1: real 40 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="5dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1.2"
-                            android:text="real 40"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/textFloydReal"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="end"
-                            android:text="1.8"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/textJohnsonReal"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="end"
-                            android:text="2.4"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <!-- Row 2: sparse 300 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="5dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1.2"
-                            android:text="sparse 300"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/textFloydSparse"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="end"
-                            android:text="41"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/textJohnsonSparse"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="end"
-                            android:text="9.6"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <!-- Row 3: dense 200 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1.2"
-                            android:text="dense 200"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/textFloydDense"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="end"
-                            android:text="12"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/textJohnsonDense"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="end"
-                            android:text="38"
-                            android:textColor="@color/ink"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Muted Note (.mut) -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:text="@string/bm_note"
-                android:textColor="@color/mut"
-                android:textSize="10.5sp" />
-
-            <!-- Run Benchmark Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonBenchmark"
-                style="@style/Widget.KrishiChain.Button.Green"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_marginBottom="12dp"
-                android:text="@string/button_bm_run"
-                android:textSize="12sp" />
-
-            <!-- Progress Indicator -->
-            <ProgressBar
-                android:id="@+id/progress"
-                style="@style/Widget.Material3.CircularProgressIndicator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="10dp"
-                android:indeterminateTint="@color/pri"
-                android:visibility="gone" />
-
-            <!-- Section: Highway Freight Bottleneck Analyzer -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="7dp"
-                android:text="Freight Bottleneck Analyzer"
-                android:textColor="@color/ink"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
+            <!-- Highway Flow & Bottlenecks (Same 52dp flat style as other tiles) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardBottleneckAnalyzer"
                 style="@style/Widget.KrishiChain.Card"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
+                android:layout_height="52dp"
+                android:layout_marginBottom="8dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="@color/card">
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0.5dp"
+                app:strokeColor="#DEE8DF"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="14dp">
-
-                    <FrameLayout
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="@drawable/bg_circle_translucent">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:text="🚧"
-                            android:textSize="19sp" />
-                    </FrameLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Highway Flow &amp; Bottlenecks"
-                            android:textColor="#144623"
-                            android:textSize="13.5sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Edmonds-Karp Max-Flow / Min-Cut corridor analysis &amp; traffic choke-points"
-                            android:textColor="@color/mut"
-                            android:textSize="11sp" />
-                    </LinearLayout>
+                    android:paddingHorizontal="14dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_tab_on"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="5dp"
-                        android:text="Open →"
-                        android:textColor="@color/white"
-                        android:textSize="11sp"
+                        android:text="🚧"
+                        android:textSize="17sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:text="Highway Flow &amp; Bottlenecks"
+                        android:textColor="@color/ink"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textColor="@color/mut"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Interactive Graph Lab (Same 52dp flat style) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardGraphLab"
+                style="@style/Widget.KrishiChain.Card"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0.5dp"
+                app:strokeColor="#DEE8DF"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔬"
+                        android:textSize="17sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:text="Interactive Graph Lab"
+                        android:textColor="@color/ink"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textColor="@color/mut"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -351,7 +174,12 @@
                 style="@style/Widget.KrishiChain.Card"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:layout_marginBottom="14dp">
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0.5dp"
+                app:strokeColor="#DEE8DF"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -396,12 +224,17 @@
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
-            <!-- Account Info Tile (same 52dp height) -->
+            <!-- Account Info Tile -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.KrishiChain.Card"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:layout_marginBottom="8dp">
+                android:layout_marginBottom="8dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0.5dp"
+                app:strokeColor="#DEE8DF"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -443,7 +276,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Change Password Tile (same 52dp height) -->
+            <!-- Change Password Tile -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardChangePassword"
                 style="@style/Widget.KrishiChain.Card"
@@ -451,7 +284,12 @@
                 android:layout_height="52dp"
                 android:layout_marginBottom="8dp"
                 android:clickable="true"
-                android:focusable="true">
+                android:focusable="true"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0.5dp"
+                app:strokeColor="#DEE8DF"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -486,7 +324,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Logout Tile (same 52dp height) -->
+            <!-- Logout Tile -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardLogout"
                 style="@style/Widget.KrishiChain.Card"
@@ -494,7 +332,12 @@
                 android:layout_height="52dp"
                 android:layout_marginBottom="16dp"
                 android:clickable="true"
-                android:focusable="true">
+                android:focusable="true"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0.5dp"
+                app:strokeColor="#DEE8DF"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -528,16 +371,6 @@
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- Result text hidden/subtle output -->
-            <TextView
-                android:id="@+id/textResult"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="monospace"
-                android:textColor="@color/mut"
-                android:textSize="10sp"
-                android:visibility="gone" />
 
         </LinearLayout>
     </ScrollView>

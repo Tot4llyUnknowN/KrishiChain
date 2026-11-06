@@ -77,12 +77,23 @@
                     android:layout_weight="1"
                     android:background="@drawable/bg_spinner_dropdown">
 
-                    <Spinner
-                        android:id="@+id/spinnerCluster"
+                    <AutoCompleteTextView
+                        android:id="@+id/autoCompleteCluster"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:background="@null"
-                        android:spinnerMode="dropdown" />
+                        android:completionThreshold="1"
+                        android:dropDownHeight="260dp"
+                        android:gravity="center_vertical"
+                        android:hint="Type or select district"
+                        android:imeOptions="actionDone"
+                        android:inputType="textCapWords|textNoSuggestions"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="26dp"
+                        android:singleLine="true"
+                        android:textColor="#144623"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
                 </FrameLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

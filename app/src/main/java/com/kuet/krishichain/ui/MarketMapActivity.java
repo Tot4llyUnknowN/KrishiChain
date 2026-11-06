@@ -147,10 +147,10 @@ public class MarketMapActivity extends AppCompatActivity {
             isSyncingSpinners = true;
             if (originChanged) {
                 selectedOriginId = prefOriginId;
-                if (binding.spinnerOrigin.getAdapter() != null) {
+                if (binding.autoCompleteOrigin.getAdapter() != null) {
                     for (int i = 0; i < allNodes.size(); i++) {
                         if (allNodes.get(i).id == selectedOriginId) {
-                            binding.spinnerOrigin.setSelection(i);
+                            binding.autoCompleteOrigin.setText(allNodes.get(i).name, false);
                             break;
                         }
                     }
@@ -209,72 +209,61 @@ public class MarketMapActivity extends AppCompatActivity {
 
                 isSyncingSpinners = true;
 
-                // 1. Setup Origin Spinner with all 64 districts
-                ArrayAdapter<NodeEntity> originAdapter = new ArrayAdapter<>(
-                        this, R.layout.item_spinner_selected, allNodes);
-                originAdapter.setDropDownViewResource(R.layout.item_spinner_dropdown);
-                binding.spinnerOrigin.setAdapter(originAdapter);
+                // 1. Setup Origin Searchable AutoComplete with all 64 districts
+                List<String> originNames = new ArrayList<>();
+                for (NodeEntity n : allNodes) {
+                    originNames.add(n.name);
+                }
+                SearchableDistrictAdapter originAdapter = new SearchableDistrictAdapter(
+                        this, android.R.layout.simple_dropdown_item_1line, originNames);
+                binding.autoCompleteOrigin.setAdapter(originAdapter);
 
                 for (int i = 0; i < allNodes.size(); i++) {
                     if (allNodes.get(i).id == selectedOriginId) {
-                        binding.spinnerOrigin.setSelection(i);
+                        binding.autoCompleteOrigin.setText(allNodes.get(i).name, false);
                         break;
                     }
                 }
 
-                // 2. Setup Destination Spinner with prompt at position 0
-                List<String> destOptions = new ArrayList<>();
-                destOptions.add("-- Select Destination City --");
-                for (NodeEntity n : allNodes) {
-                    destOptions.add(n.name);
-                }
-                ArrayAdapter<String> destAdapter = new ArrayAdapter<>(
-                        this, R.layout.item_spinner_selected, destOptions);
-                destAdapter.setDropDownViewResource(R.layout.item_spinner_dropdown);
-                binding.spinnerDest.setAdapter(destAdapter);
-                binding.spinnerDest.setSelection(0); // Unselected by default!
-
-                isSyncingSpinners = false;
-
-                binding.spinnerOrigin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        if (isSyncingSpinners) return;
-                        NodeEntity selected = (NodeEntity) binding.spinnerOrigin.getSelectedItem();
-                        if (selected != null && selected.id != selectedOriginId) {
-                            selectedOriginId = selected.id;
+                binding.autoCompleteOrigin.setOnClickListener(v -> binding.autoCompleteOrigin.showDropDown());
+                binding.autoCompleteOrigin.setOnFocusChangeListener((v, hasFocus) -> {
+                    if (hasFocus) binding.autoCompleteOrigin.showDropDown();
+                });
+                binding.autoCompleteOrigin.setOnItemClickListener((parent, view, position, id) -> {
+                    String selName = (String) parent.getItemAtPosition(position);
+                    for (NodeEntity n : allNodes) {
+                        if (n.name.equalsIgnoreCase(selName)) {
+                            selectedOriginId = n.id;
                             UserPreferences.setOriginId(MarketMapActivity.this, selectedOriginId);
                             if (selectedDestId > 0 && selectedDestId != selectedOriginId) {
                                 calculateAndRenderRoute(selectedOriginId, selectedDestId);
                             } else {
                                 clearRouteOnMap();
                             }
+                            break;
                         }
                     }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {}
                 });
 
-                binding.spinnerDest.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        if (isSyncingSpinners) return;
-                        if (position == 0) {
-                            // Unselected
-                            selectedDestId = -1;
-                            currentRouteResult = null;
-                            resetCardToDefaultPrompt();
-                            clearRouteOnMap();
-                        } else {
-                            NodeEntity selected = allNodes.get(position - 1);
-                            selectDestinationHub(selected.id, selected.name);
+                // 2. Setup Destination Searchable AutoComplete
+                SearchableDistrictAdapter destAdapter = new SearchableDistrictAdapter(
+                        this, android.R.layout.simple_dropdown_item_1line, originNames);
+                binding.autoCompleteDest.setAdapter(destAdapter);
+                binding.autoCompleteDest.setOnClickListener(v -> binding.autoCompleteDest.showDropDown());
+                binding.autoCompleteDest.setOnFocusChangeListener((v, hasFocus) -> {
+                    if (hasFocus) binding.autoCompleteDest.showDropDown();
+                });
+                binding.autoCompleteDest.setOnItemClickListener((parent, view, position, id) -> {
+                    String selName = (String) parent.getItemAtPosition(position);
+                    for (NodeEntity n : allNodes) {
+                        if (n.name.equalsIgnoreCase(selName)) {
+                            selectDestinationHub(n.id, n.name);
+                            break;
                         }
                     }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {}
                 });
+
+                isSyncingSpinners = false;
 
                 // Render map initialized with only origin marked (no auto destination selected)
                 renderBaseMap();
@@ -309,14 +298,9 @@ public class MarketMapActivity extends AppCompatActivity {
 
         selectedDestId = destId;
 
-        // Synchronize spinner selection without re-triggering listener
+        // Synchronize destination selection without re-triggering listener
         isSyncingSpinners = true;
-        for (int i = 0; i < allNodes.size(); i++) {
-            if (allNodes.get(i).id == destId) {
-                binding.spinnerDest.setSelection(i + 1);
-                break;
-            }
-        }
+        binding.autoCompleteDest.setText(destName, false);
         isSyncingSpinners = false;
 
         calculateAndRenderRoute(selectedOriginId, destId);

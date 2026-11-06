@@ -94,13 +94,24 @@
                     android:textSize="10sp"
                     android:textStyle="bold" />
 
-                <Spinner
-                    android:id="@+id/spinnerOrigin"
+                <AutoCompleteTextView
+                    android:id="@+id/autoCompleteOrigin"
                     android:layout_width="match_parent"
                     android:layout_height="36dp"
                     android:layout_marginTop="2dp"
                     android:background="@drawable/bg_spinner_dropdown"
-                    android:paddingHorizontal="6dp" />
+                    android:completionThreshold="1"
+                    android:dropDownHeight="240dp"
+                    android:gravity="center_vertical"
+                    android:hint="Type origin"
+                    android:imeOptions="actionDone"
+                    android:inputType="textCapWords|textNoSuggestions"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="26dp"
+                    android:singleLine="true"
+                    android:textColor="#144623"
+                    android:textSize="11.5sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- Crop Selector -->
@@ -144,14 +155,25 @@
                 android:textSize="10.5sp"
                 android:textStyle="bold" />
 
-            <Spinner
-                android:id="@+id/spinnerDest"
+            <AutoCompleteTextView
+                android:id="@+id/autoCompleteDest"
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_spinner_dropdown"
-                android:paddingHorizontal="6dp" />
+                android:completionThreshold="1"
+                android:dropDownHeight="240dp"
+                android:gravity="center_vertical"
+                android:hint="Type destination"
+                android:imeOptions="actionDone"
+                android:inputType="textCapWords|textNoSuggestions"
+                android:paddingStart="8dp"
+                android:paddingEnd="26dp"
+                android:singleLine="true"
+                android:textColor="#144623"
+                android:textSize="11.5sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 

@@ -465,8 +465,8 @@ public class GraphView extends View {
                 linePaint.setStrokeWidth(3 * dp);
                 break;
             case E_TREE:
-                linePaint.setColor(0xFF1976D2);
-                linePaint.setStrokeWidth(2.5f * dp);
+                linePaint.setColor(0xFF1565C0);
+                linePaint.setStrokeWidth(3f * dp);
                 break;
             case E_ADD:
                 linePaint.setColor(0xFF2E7D32);

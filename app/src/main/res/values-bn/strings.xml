@@ -120,11 +120,7 @@
     <string name="button_sync">এখনই সিঙ্ক করুন</string>
     <string name="button_benchmark">বেঞ্চমার্ক</string>
 
-    <string name="bm_title">বেঞ্চমার্ক</string>
-    <string name="bm_note">ফ্লয়েড-ওয়ার্শাল বনাম জনসন: নেতিবাচক ধারাসহ অল-পেয়ার্স শর্টেস্ট পাথ। N বার রানের সেরা সময় (মিলি-সেকেন্ডে)। "real" হলো আপনার ৪০-হাবের প্রকৃত গ্রাফ; বাকিগুলো র্যান্ডম গ্রাফ।</string>
-    <string name="button_bm_run">বেঞ্চমার্ক শুরু করুন</string>
-    <string name="bm_running">চলছে…</string>
-    <string name="bm_done">সম্পন্ন হয়েছে। MISMATCH না থাকলে উভয় অ্যালগরিদমের ফলাফল সম্পূর্ণ অভিন্ন।</string>
+    <string name="bm_title">সেটিংস ও টুলস</string>
     <string name="weather_none">আবহাওয়া: তথ্য নেই (আবহাওয়া রিফ্রেশ চাপুন)</string>
     <string name="weather_real">আবহাওয়া: বাস্তব উপাত্ত (%1$s), সর্বোচ্চ বৃষ্টিপাত %2$.1f মিমি</string>
     <string name="weather_sim">আবহাওয়া: কৃত্রিম বর্ষা ডেমো, দক্ষিণ-পশ্চিমাঞ্চলে %1$.0f মিমি বৃষ্টি</string>

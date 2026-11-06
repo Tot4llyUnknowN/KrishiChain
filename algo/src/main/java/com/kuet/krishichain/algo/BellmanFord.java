@@ -18,7 +18,7 @@ public final class BellmanFord {
         return run(g, source, true);
     }
 
-    /** record = false skips the relax/update trace (used by Johnson and benchmarks). */
+    /** record = false skips the relax/update trace. */
     public static PathResult run(Graph g, int source, boolean record) {
         int n = g.size();
         double[] dist = new double[n];

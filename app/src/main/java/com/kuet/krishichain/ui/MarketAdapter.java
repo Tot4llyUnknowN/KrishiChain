@@ -76,7 +76,7 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.VH> {
 
         if (m.allocatedTons > 0) {
             b.textCosts.setVisibility(View.VISIBLE);
-            b.textCosts.setText(String.format(Locale.US, "⚡ Flow: %.0ft allocated%s",
+            b.textCosts.setText(String.format(Locale.US, "Flow: %.0ft allocated%s",
                     m.allocatedTons, (m.allocatedTons >= m.demandTons - 0.001) ? " (Full)" : ""));
             b.textCosts.setTextColor(Color.parseColor("#1B7A2F"));
         } else {

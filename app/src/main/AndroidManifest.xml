@@ -46,13 +46,7 @@
             android:name=".ui.BottleneckActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.PlannerActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.BenchmarkActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.ReportsActivity"
             android:exported="false" />
         <activity
             android:name=".ui.AllPricesActivity"

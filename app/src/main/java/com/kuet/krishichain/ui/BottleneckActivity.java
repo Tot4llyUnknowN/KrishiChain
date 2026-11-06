@@ -35,6 +35,8 @@ public class BottleneckActivity extends AppCompatActivity {
     private ActivityBottleneckBinding binding;
     private NetworkSnapshot snap;
     private final List<Integer> districtNodeIndices = new ArrayList<>();
+    private final List<String> clusterItems = new ArrayList<>();
+    private int selectedClusterChoice = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,8 +106,8 @@ public class BottleneckActivity extends AppCompatActivity {
         snap = s;
         GraphBinder.bind(binding.graphView, s);
 
-        List<String> items = new ArrayList<>();
-        items.add("All Districts (National Network)");
+        clusterItems.clear();
+        clusterItems.add("All Districts (National Network)");
         districtNodeIndices.clear();
 
         int savedOriginId = UserPreferences.getOriginId(this, 1);
@@ -113,31 +115,58 @@ public class BottleneckActivity extends AppCompatActivity {
 
         for (int i = 0; i < s.nodes.size(); i++) {
             districtNodeIndices.add(i);
-            items.add(s.nodes.get(i).name);
+            clusterItems.add(s.nodes.get(i).name);
             if (s.nodes.get(i).id == savedOriginId) {
                 initialPos = i + 1; // 1-based index after "All Districts"
             }
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this, R.layout.item_spinner_selected, items);
-        adapter.setDropDownViewResource(R.layout.item_spinner_dropdown);
-        binding.spinnerCluster.setAdapter(adapter);
+        SearchableDistrictAdapter adapter = new SearchableDistrictAdapter(
+                this, android.R.layout.simple_dropdown_item_1line, clusterItems);
+        binding.autoCompleteCluster.setAdapter(adapter);
 
-        if (initialPos > 0 && initialPos < items.size()) {
-            binding.spinnerCluster.setSelection(initialPos);
-        } else {
-            binding.spinnerCluster.setSelection(0);
-        }
+        selectedClusterChoice = (initialPos >= 0 && initialPos < clusterItems.size()) ? initialPos : 0;
+        binding.autoCompleteCluster.setText(clusterItems.get(selectedClusterChoice), false);
 
-        binding.spinnerCluster.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        binding.autoCompleteCluster.setOnClickListener(v -> binding.autoCompleteCluster.showDropDown());
+        binding.autoCompleteCluster.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                binding.autoCompleteCluster.showDropDown();
+            }
+        });
+        binding.autoCompleteCluster.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedName = (String) parent.getItemAtPosition(position);
+            int idx = clusterItems.indexOf(selectedName);
+            if (idx >= 0) {
+                selectedClusterChoice = idx;
+                if (idx > 0 && idx - 1 < snap.nodes.size()) {
+                    UserPreferences.setOriginId(BottleneckActivity.this, snap.nodes.get(idx - 1).id);
+                }
                 run();
             }
-
+        });
+        binding.autoCompleteCluster.addTextChangedListener(new android.text.TextWatcher() {
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                if (s == null) return;
+                String val = s.toString().trim();
+                for (int i = 0; i < clusterItems.size(); i++) {
+                    if (clusterItems.get(i).equalsIgnoreCase(val)) {
+                        if (selectedClusterChoice != i) {
+                            selectedClusterChoice = i;
+                            if (i > 0 && i - 1 < snap.nodes.size()) {
+                                UserPreferences.setOriginId(BottleneckActivity.this, snap.nodes.get(i - 1).id);
+                            }
+                            run();
+                        }
+                        break;
+                    }
+                }
+            }
         });
 
         binding.buttonRun.setEnabled(true);
@@ -171,7 +200,7 @@ public class BottleneckActivity extends AppCompatActivity {
             }
         }
 
-        int choice = binding.spinnerCluster.getSelectedItemPosition();
+        int choice = selectedClusterChoice;
         if (choice < 0) choice = 0;
 
         if (choice == 0) {

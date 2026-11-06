@@ -14,7 +14,9 @@ import com.kuet.krishichain.R;
 /** Fixed universal bottom navigation bar across all screens (Home, Map, Prices, More). */
 public final class BottomNavHelper {
     public enum Tab {
-        HOME, MAP, PRICES, MORE, NONE
+        HOME(0), MAP(1), PRICES(2), MORE(3), NONE(-1);
+        public final int order;
+        Tab(int order) { this.order = order; }
     }
 
     private static final int COLOR_ACTIVE = Color.parseColor("#1B7A2F");
@@ -53,28 +55,28 @@ public final class BottomNavHelper {
         if (navHome != null) {
             navHome.setOnClickListener(v -> {
                 if (currentTab != Tab.HOME) {
-                    launch(activity, MainActivity.class);
+                    launch(activity, currentTab, Tab.HOME, MainActivity.class);
                 }
             });
         }
         if (navPrices != null) {
             navPrices.setOnClickListener(v -> {
                 if (currentTab != Tab.PRICES) {
-                    launch(activity, AllPricesActivity.class);
+                    launch(activity, currentTab, Tab.PRICES, AllPricesActivity.class);
                 }
             });
         }
         if (navMap != null) {
             navMap.setOnClickListener(v -> {
                 if (currentTab != Tab.MAP) {
-                    launch(activity, MarketMapActivity.class);
+                    launch(activity, currentTab, Tab.MAP, MarketMapActivity.class);
                 }
             });
         }
         if (navMore != null) {
             navMore.setOnClickListener(v -> {
                 if (currentTab != Tab.MORE) {
-                    launch(activity, BenchmarkActivity.class);
+                    launch(activity, currentTab, Tab.MORE, BenchmarkActivity.class);
                 }
             });
         }
@@ -93,10 +95,16 @@ public final class BottomNavHelper {
         }
     }
 
-    private static void launch(Activity activity, Class<?> targetClass) {
+    private static void launch(Activity activity, Tab currentTab, Tab targetTab, Class<?> targetClass) {
         Intent intent = new Intent(activity, targetClass);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         activity.startActivity(intent);
-        activity.overridePendingTransition(0, 0);
+        if (currentTab != Tab.NONE && targetTab != Tab.NONE) {
+            if (targetTab.order > currentTab.order) {
+                activity.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            } else {
+                activity.overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            }
+        }
     }
 }

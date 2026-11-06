@@ -139,7 +139,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="1dp"
-                            android:text="Farmer 🍃"
+                            android:text="Welcome 🍃"
                             android:textColor="#134E27"
                             android:textSize="22sp"
                             android:textStyle="bold" />
@@ -212,12 +212,23 @@
                                 android:layout_height="42dp"
                                 android:background="@drawable/bg_spinner_dropdown">
 
-                                <Spinner
-                                    android:id="@+id/spinnerOrigin"
+                                <AutoCompleteTextView
+                                    android:id="@+id/autoCompleteOrigin"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
                                     android:background="@null"
-                                    android:spinnerMode="dropdown" />
+                                    android:completionThreshold="1"
+                                    android:dropDownHeight="260dp"
+                                    android:gravity="center_vertical"
+                                    android:hint="Type or select district"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="textCapWords|textNoSuggestions"
+                                    android:paddingStart="10dp"
+                                    android:paddingEnd="28dp"
+                                    android:singleLine="true"
+                                    android:textColor="#144623"
+                                    android:textSize="12.5sp"
+                                    android:textStyle="bold" />
                             </FrameLayout>
                         </LinearLayout>
 
@@ -502,62 +513,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- 3.5 Quick Report Market Price Strip -->
-            <LinearLayout
-                android:id="@+id/bannerReportPriceHome"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginBottom="12dp"
-                android:background="@drawable/bg_action_card"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="14dp"
-                android:paddingVertical="9dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="📢"
-                    android:textSize="16sp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Report Today's Local Price"
-                        android:textColor="#144623"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Crowdsource bazar rate for all farmers"
-                        android:textColor="#52705D"
-                        android:textSize="10sp" />
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_tab_on"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
-                    android:text="+ Report"
-                    android:textColor="@color/white"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
 
             <!-- 4. Estimated Profit Hero Card -->
             <FrameLayout

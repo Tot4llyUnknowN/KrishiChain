@@ -72,35 +72,6 @@
         android:orientation="vertical"
         android:padding="10dp">
 
-        <!-- Info Banner -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/bg_farmer_banner"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="🌾 National Wholesale Rates (Fixed Grouped by Crop)"
-                android:textColor="#144623"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/textActiveSortIndicator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Price High→Low"
-                android:textColor="#52705D"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-        </LinearLayout>
 
         <!-- Quick Filter Tabs / Chips -->
         <HorizontalScrollView

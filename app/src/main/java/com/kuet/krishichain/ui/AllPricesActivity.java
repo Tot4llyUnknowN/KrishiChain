@@ -184,13 +184,11 @@ public class AllPricesActivity extends AppCompatActivity {
             binding.buttonSortPrice.setTextColor(activeText);
             binding.buttonSortDistrict.setBackgroundTintList(ColorStateList.valueOf(inactiveBg));
             binding.buttonSortDistrict.setTextColor(inactiveText);
-            binding.textActiveSortIndicator.setText("Price High→Low");
         } else {
             binding.buttonSortPrice.setBackgroundTintList(ColorStateList.valueOf(inactiveBg));
             binding.buttonSortPrice.setTextColor(inactiveText);
             binding.buttonSortDistrict.setBackgroundTintList(ColorStateList.valueOf(activeBg));
             binding.buttonSortDistrict.setTextColor(activeText);
-            binding.textActiveSortIndicator.setText("District A→Z");
         }
     }
 
